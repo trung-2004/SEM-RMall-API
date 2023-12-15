@@ -1,0 +1,40 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RMall.Models.Movies
+{
+    public class CreateMovie
+    {
+        [Required(ErrorMessage = "Please enter title")]
+        [MinLength(3, ErrorMessage = "Enter at least 3 characters")]
+        [MaxLength(255, ErrorMessage = "Enter up to 255 characters")]
+        public string title { get; set; }
+
+        [Required(ErrorMessage = "Please enter actor")]
+        public string actor { get; set; }
+
+        [Required(ErrorMessage = "Please enter movie image")]
+        public string movie_image { get; set; }
+
+        public string? describe { get; set; }
+
+        [Required(ErrorMessage = "Please enter mirector")]
+        public string mirector { get; set; }
+
+        [Required(ErrorMessage = "Please enter duration")]
+        public int duration { get; set; }
+
+        [Required(ErrorMessage = "Please enter language")]
+        public string language { get; set; }
+
+        [Required(ErrorMessage = "Please enter ratings")]
+        public string ratings { get; set; }
+
+        public string? trailer { get; set; }
+
+        [Required(ErrorMessage = "Please enter cast")]
+        public string cast { get; set; }
+
+        [Required(ErrorMessage = "Please enter release date")]
+        public DateTime release_date { get; set; }
+    }
+}
