@@ -2,8 +2,11 @@
 
 namespace RMall.Models.Movies
 {
-    public class CreateMovie
+    public class EditMovie
     {
+        [Required]
+        public int id { get; set; }
+
         [Required(ErrorMessage = "Please enter title")]
         [MinLength(3, ErrorMessage = "Enter at least 3 characters")]
         [MaxLength(255, ErrorMessage = "Enter up to 255 characters")]
@@ -14,9 +17,6 @@ namespace RMall.Models.Movies
 
         [Required(ErrorMessage = "Please enter movie image")]
         public IFormFile movie_image { get; set; }
-
-        [Required(ErrorMessage = "Please enter cover image")]
-        public IFormFile cover_image { get; set; }
 
         public string? describe { get; set; }
 
@@ -41,11 +41,5 @@ namespace RMall.Models.Movies
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime release_date { get; set; }
-
-        [Required]
-        public List<int> genreIds { get; set; }
-
-        [Required]
-        public List<int> languageIds { get; set; }
     }
 }

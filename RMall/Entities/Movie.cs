@@ -13,13 +13,13 @@ public partial class Movie
 
     public string MovieImage { get; set; } = null!;
 
+    public string CoverImage { get; set; } = null!;
+
     public string? Describe { get; set; }
 
     public string Director { get; set; } = null!;
 
     public int Duration { get; set; }
-
-    public string Language { get; set; } = null!;
 
     public string Ratings { get; set; } = null!;
 
@@ -35,7 +35,13 @@ public partial class Movie
 
     public DateTime? DeletedAt { get; set; }
 
+    public virtual ICollection<Gallery> Galleries { get; set; } = new List<Gallery>();
+
     public virtual ICollection<MovieGenre> MovieGenres { get; set; } = new List<MovieGenre>();
+
+    public virtual ICollection<MovieLanguage> MovieLanguages { get; set; } = new List<MovieLanguage>();
+
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual ICollection<Show> Shows { get; set; } = new List<Show>();
 }

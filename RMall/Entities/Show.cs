@@ -15,8 +15,6 @@ public partial class Show
 
     public DateTime StartDate { get; set; }
 
-    public decimal Price { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
@@ -28,4 +26,6 @@ public partial class Show
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Room Room { get; set; } = null!;
+
+    public virtual ICollection<SeatPricing> SeatPricings { get; set; } = new List<SeatPricing>();
 }

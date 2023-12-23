@@ -126,6 +126,8 @@ namespace RMall.Controllers
                     Password = hassPassword,
                     Status = 0,
                     Role = "User",
+                    Level = 0,
+                    Money = 0,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     DeletedAt = null,

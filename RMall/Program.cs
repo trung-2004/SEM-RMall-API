@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RMall.Helper.Email;
+using RMall.Service.Movies;
+using RMall.Service.UploadFiles;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +30,11 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+builder.Services.AddScoped<IImgService, ImgService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 
 // start connect db
 string connectionString = builder.Configuration.GetConnectionString("API");

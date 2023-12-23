@@ -21,6 +21,10 @@ public partial class User
 
     public int Status { get; set; }
 
+    public int Level { get; set; }
+
+    public decimal Money { get; set; }
+
     public string? ResetToken { get; set; }
 
     public DateTime? ResetTokenExpiry { get; set; }
@@ -32,6 +36,8 @@ public partial class User
     public DateTime? DeletedAt { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual ICollection<UserPromotion> UserPromotions { get; set; } = new List<UserPromotion>();
 }

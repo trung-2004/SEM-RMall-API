@@ -3,17 +3,13 @@ using System.Collections.Generic;
 
 namespace RMall.Entities;
 
-public partial class Room
+public partial class Section
 {
     public int Id { get; set; }
 
     public string Name { get; set; } = null!;
 
-    public string Slug { get; set; } = null!;
-
-    public int Rows { get; set; }
-
-    public int Columns { get; set; }
+    public int FloorId { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
@@ -21,7 +17,5 @@ public partial class Room
 
     public DateTime? DeletedAt { get; set; }
 
-    public virtual ICollection<Seat> Seats { get; set; } = new List<Seat>();
-
-    public virtual ICollection<Show> Shows { get; set; } = new List<Show>();
+    public virtual Floor Floor { get; set; } = null!;
 }
