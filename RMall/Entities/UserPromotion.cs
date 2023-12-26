@@ -13,7 +13,7 @@ public partial class UserPromotion
 
     public int IsUsed { get; set; }
 
-    public DateTime UsedAt { get; set; }
+    public DateTime? UsedAt { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 

@@ -35,13 +35,13 @@ namespace RMall.Controllers
         [HttpGet]
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetMovieAll()
+        {
+            try
             {
-                try
+                List<Movie> movies = await _context.Movies.Include(m => m.MovieGenres).ThenInclude(m => m.Genre).Include(m => m.MovieLanguages).ThenInclude(m => m.Language).Where(m => m.DeletedAt == null).OrderByDescending(m => m.Id).ToListAsync();
+                List<MovieDTO> result = new List<MovieDTO>();
+                foreach (Movie m in movies)
                 {
-                    List<Movie> movies = await _context.Movies.Include(m => m.MovieGenres).ThenInclude(m => m.Genre).Include(m => m.MovieLanguages).ThenInclude(m => m.Language).Where(m => m.DeletedAt == null).OrderByDescending(m => m.Id).ToListAsync();
-                    List<MovieDTO> result = new List<MovieDTO>();
-                    foreach (Movie m in movies)
-                    {
                     var movieDto = new MovieDTO
                     {
                         id = m.Id,
@@ -86,23 +86,23 @@ namespace RMall.Controllers
                     }
 
                     result.Add(movieDto);
-                    }
-                    return Ok(result);
-
-                } catch (Exception ex)
-                {
-                    var response = new GeneralServiceResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = ex.Message,
-                        Data = ""
-                    };
-
-                    return BadRequest(response);
                 }
-            
+                return Ok(result);
+
             }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMovieById(int id)
@@ -185,6 +185,75 @@ namespace RMall.Controllers
                 return BadRequest(response);
             }
             return NotFound();
+        }
+
+        [HttpGet("trash-can")]
+        public async Task<IActionResult> TrashCan()
+        {
+            try
+            {
+                List<Movie> movies = await _context.Movies.Include(m => m.MovieGenres).ThenInclude(m => m.Genre).Include(m => m.MovieLanguages).ThenInclude(m => m.Language).Where(m => m.DeletedAt != null).OrderByDescending(m => m.DeletedAt).ToListAsync();
+                List<MovieDTO> result = new List<MovieDTO>();
+                foreach (Movie m in movies)
+                {
+                    var movieDto = new MovieDTO
+                    {
+                        id = m.Id,
+                        title = m.Title,
+                        actor = m.Actor,
+                        movie_image = m.MovieImage,
+                        describe = m.Describe,
+                        director = m.Director,
+                        duration = m.Duration,
+                        ratings = m.Ratings,
+                        trailer = m.Trailer,
+                        cast = m.Cast,
+                        release_date = m.ReleaseDate,
+                        createdAt = m.CreatedAt,
+                        updatedAt = m.UpdatedAt,
+                        deletedAt = m.DeletedAt,
+                    };
+
+                    var genres = new List<GenreMovieResponse>();
+                    var languages = new List<LanguageMovieResponse>();
+
+                    foreach (var item in m.MovieGenres)
+                    {
+                        var genre = new GenreMovieResponse
+                        {
+                            id = item.Id,
+                            name = item.Genre.Name
+                        };
+                        genres.Add(genre);
+                        movieDto.genres = genres;
+                    }
+
+                    foreach (var item in m.MovieLanguages)
+                    {
+                        var language = new LanguageMovieResponse
+                        {
+                            id = item.Id,
+                            name = item.Language.Name
+                        };
+                        languages.Add(language);
+                        movieDto.languages = languages;
+                    }
+
+                    result.Add(movieDto);
+                }
+                return Ok(result);
+            } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
         }
 
         [HttpPost("create")]

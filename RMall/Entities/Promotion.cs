@@ -17,6 +17,8 @@ public partial class Promotion
 
     public int DiscountPercentage { get; set; }
 
+    public int Limit { get; set; }
+
     public string CouponCode { get; set; } = null!;
 
     public decimal MinPurchaseAmount { get; set; }

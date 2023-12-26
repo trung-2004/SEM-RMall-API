@@ -127,7 +127,17 @@ namespace RMall.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                return Ok(model);
+                return Created($"get-by-id?id={show.Id}", new ShowDTO
+                {
+                    id = show.Id,
+                    movieId = show.MovieId,
+                    roomId = show.RoomId,
+                    showCode = show.ShowCode,
+                    startDate = show.StartDate,
+                    createdAt = show.CreatedAt,
+                    updatedAt = show.UpdatedAt,
+                    deletedAt = show.DeletedAt,
+                });
             } catch (Exception ex)
             {
                 var response = new GeneralServiceResponse
@@ -142,13 +152,28 @@ namespace RMall.Controllers
             }
         }
 
-        [HttpGet("get-by-movie")]
-        public async Task<IActionResult> GetShowByMovie()
+        [HttpGet("get-by-movie/{id}")]
+        public async Task<IActionResult> GetShowByMovie(int id)
         {
             try
             {
+                List<ShowDTO> result = new List<ShowDTO>();
 
-                return Ok();
+                var shows = await _context.Shows.Where(s => s.StartDate.AddMinutes(30) > DateTime.Now && s.MovieId == id).OrderByDescending(s => s.StartDate).ToListAsync();
+                foreach (var show in shows)
+                {
+                    result.Add(new ShowDTO
+                    {
+                        id = show.Id,
+                        movieId = show.MovieId,
+                        roomId = show.RoomId,
+                        showCode = show.ShowCode,
+                        createdAt = show.CreatedAt,
+                        updatedAt = show.UpdatedAt,
+                        deletedAt = show.DeletedAt,
+                    });
+                }
+                return Ok(result);
             } catch (Exception ex)
             {
                 var response = new GeneralServiceResponse

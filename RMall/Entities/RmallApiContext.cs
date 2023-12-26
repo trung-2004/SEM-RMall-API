@@ -467,7 +467,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Promotion>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Promotio__3213E83F538E7E3F");
+            entity.HasKey(e => e.Id).HasName("PK__Promotio__3213E83FF735FA51");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CouponCode)
@@ -484,6 +484,7 @@ public partial class RmallApiContext : DbContext
             entity.Property(e => e.EndDate)
                 .HasColumnType("datetime")
                 .HasColumnName("end_date");
+            entity.Property(e => e.Limit).HasColumnName("limit");
             entity.Property(e => e.MinPurchaseAmount)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("min_purchase_amount");
@@ -814,7 +815,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<UserPromotion>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserProm__3213E83FE3A66FC5");
+            entity.HasKey(e => e.Id).HasName("PK__UserProm__3213E83FCBBAABA4");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -836,12 +837,12 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Promotion).WithMany(p => p.UserPromotions)
                 .HasForeignKey(d => d.PromotionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserPromo__promo__18B6AB08");
+                .HasConstraintName("FK__UserPromo__promo__2F9A1060");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserPromotions)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserPromo__user___17C286CF");
+                .HasConstraintName("FK__UserPromo__user___2EA5EC27");
         });
 
         OnModelCreatingPartial(modelBuilder);
