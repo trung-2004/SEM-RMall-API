@@ -40,6 +40,7 @@ namespace RMall.Controllers
                         roomName = s.Room.Name,
                         startDate = s.StartDate,
                         showCode = s.ShowCode,
+                        language = s.Language,
                         createdAt = s.CreatedAt,
                         updatedAt = s.UpdatedAt,
                         deletedAt = s.DeletedAt,

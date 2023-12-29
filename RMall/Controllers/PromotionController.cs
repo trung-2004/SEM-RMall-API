@@ -420,5 +420,159 @@ namespace RMall.Controllers
                 return BadRequest(response);
             }
         }
+
+        [HttpGet("get-promotion-by-user")]
+        public async Task<IActionResult> GetPromotionByUser(int userId)
+        {
+            try
+            {
+                List<UserPromotion> userPromotions = await _context.UserPromotions.Include(up => up.Promotion).Where(up => up.UserId == userId && up.IsUsed == 0 && up.Promotion.EndDate >= DateTime.Now).OrderByDescending(up => up.Id).ToListAsync();
+                List<UserPromotionDTO> result = new List<UserPromotionDTO>();
+                foreach (var item in userPromotions)
+                {
+                    result.Add(new UserPromotionDTO
+                    {
+                        id = item.Id,
+                        userId = item.UserId,
+                        promotionId = item.PromotionId,
+                        promotionName = item.Promotion.Name,
+                        promotionCode = item.Promotion.CouponCode,
+                        isUsed = item.IsUsed,
+                        usedAt = item.UsedAt,
+                        createdAt = item.CreatedAt,
+                        updatedAt = item.UpdatedAt,
+                        deletedAt = item.DeletedAt,
+                    });
+                }
+                return Ok(result);
+            } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("checkDiscount")]
+        public async Task<IActionResult> CheckDiscount(string couponCode, int userId, decimal total)
+        {
+            try
+            {
+                var promotion = await _context.Promotions
+                    .Where(promotion => promotion.CouponCode == couponCode)
+                    .FirstOrDefaultAsync();
+
+                if (promotion != null && promotion.StartDate <= DateTime.Now && promotion.EndDate >= DateTime.Now)
+                {
+                    var userPromotion = await _context.UserPromotions
+                        .Where(up => up.UserId == userId && up.PromotionId == promotion.Id)
+                        .FirstOrDefaultAsync();
+
+                    if (userPromotion != null)
+                    {
+                        if(userPromotion.IsUsed == 0)
+                        {
+                            if (total >= promotion.MinPurchaseAmount)
+                            {
+                                return Ok(new GeneralServiceResponse
+                                {
+                                    Success = true,
+                                    StatusCode = 200,
+                                    Message = "Valid promo code",
+                                    Data = true
+                                });
+                            }
+                            else
+                            {
+                                return Ok(new GeneralServiceResponse
+                                {
+                                    Success = false,
+                                    StatusCode = 200,
+                                    Message = "The order does not meet promotion conditions",
+                                    Data = false
+                                });
+                            }
+                        }
+                        else
+                        {
+                            return Ok(new GeneralServiceResponse
+                            {
+                                Success = false,
+                                StatusCode = 200,
+                                Message = "User has already used this promotion.",
+                                Data = false
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return Ok(new GeneralServiceResponse
+                        {
+                            Success = false,
+                            StatusCode = 200,
+                            Message = "Invalid or expired promotion.",
+                            Data = false
+                        });
+                    }
+                }
+                else
+                {
+                    return Ok(new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 200,
+                        Message = "Invalid or expired promotion.",
+                        Data = false
+                    });
+                }
+                } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("discounts")]
+        public async Task<IActionResult> Discounts(string promotionCode, decimal total)
+        {
+            try
+            {
+                var promotion = await _context.Promotions.FirstOrDefaultAsync(p => p.CouponCode.Equals(promotionCode));
+
+                var finalTotal = total - total * ((decimal)promotion.DiscountPercentage / 100);
+
+                return Ok(new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 200,
+                    Message = "successful discount.",
+                    Data = finalTotal
+                });
+            } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
     }
 }
