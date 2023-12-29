@@ -8,6 +8,7 @@ using RMall.Models.MovieGenre;
 using RMall.Models.MovieLanguage;
 using RMall.Models.SeatPricings;
 using RMall.Models.Shows;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RMall.Controllers
 {
@@ -103,6 +104,7 @@ namespace RMall.Controllers
                     RoomId = model.roomId,
                     ShowCode = model.showCode,
                     StartDate = model.startDate,
+                    Language = model.language,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     DeletedAt = null
@@ -153,13 +155,28 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-movie/{id}")]
-        public async Task<IActionResult> GetShowByMovie(int id)
+        public async Task<IActionResult> GetShowByMovie(int id, DateTime? from, string? language)
         {
             try
             {
                 List<ShowDTO> result = new List<ShowDTO>();
 
-                var shows = await _context.Shows.Where(s => s.StartDate.AddMinutes(30) > DateTime.Now && s.MovieId == id).OrderByDescending(s => s.StartDate).ToListAsync();
+                DateTime currentDate = DateTime.Now.Date;
+                DateTime endDate = currentDate.AddDays(6);
+                //var shows = await _context.Shows.Where(s => s.StartDate >= DateTime.Now && s.MovieId == id && s.StartDate <= DateTime.Now.AddDays(6)).OrderBy(s => s.StartDate).ToListAsync();
+                var shows = _context.Shows.Where(s => s.StartDate >= currentDate && s.MovieId == id && s.StartDate <= endDate).OrderBy(s => s.StartDate).AsQueryable();
+                
+                #region Filtering
+                if (!string.IsNullOrEmpty(language))
+                {
+                    shows = shows.Where(s => s.Language.Contains(language));
+                }
+                if (from.HasValue)
+                {
+                    shows = shows.Where(s => s.StartDate.Date == from.Value.Date);
+                }
+                #endregion
+
                 foreach (var show in shows)
                 {
                     result.Add(new ShowDTO
@@ -167,13 +184,17 @@ namespace RMall.Controllers
                         id = show.Id,
                         movieId = show.MovieId,
                         roomId = show.RoomId,
+                        startDate = show.StartDate,
                         showCode = show.ShowCode,
+                        language = show.Language,
                         createdAt = show.CreatedAt,
                         updatedAt = show.UpdatedAt,
                         deletedAt = show.DeletedAt,
                     });
                 }
+
                 return Ok(result);
+
             } catch (Exception ex)
             {
                 var response = new GeneralServiceResponse

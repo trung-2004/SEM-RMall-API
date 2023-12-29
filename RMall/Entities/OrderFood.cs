@@ -15,12 +15,6 @@ public partial class OrderFood
 
     public int Quantity { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
-
-    public DateTime? DeletedAt { get; set; }
-
     public virtual Food Food { get; set; } = null!;
 
     public virtual Order Order { get; set; } = null!;

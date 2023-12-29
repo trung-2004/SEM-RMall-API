@@ -16,6 +16,8 @@ namespace RMall.DTOs
         public string? roomName { get; set; }
 
         public DateTime startDate { get; set; }
+
+        public string language { get; set; }
         public List<SeatPricingResponse>? seatPricings { get; set; }
 
     }

@@ -51,9 +51,8 @@ namespace RMall.Controllers
                         describe = m.Describe,
                         director = m.Director,
                         duration = m.Duration,
-                        ratings = m.Ratings,
+                        favoriteCount = m.FavoriteCount,
                         trailer = m.Trailer,
-                        cast = m.Cast,
                         release_date = m.ReleaseDate,
                         createdAt = m.CreatedAt,
                         updatedAt = m.UpdatedAt,
@@ -121,9 +120,8 @@ namespace RMall.Controllers
                         describe = m.Describe,
                         director = m.Director,
                         duration = m.Duration,
-                        ratings = m.Ratings,
+                        favoriteCount = m.FavoriteCount,
                         trailer = m.Trailer,
-                        cast = m.Cast,
                         release_date = m.ReleaseDate,
                         createdAt = m.CreatedAt,
                         updatedAt = m.UpdatedAt,
@@ -156,7 +154,7 @@ namespace RMall.Controllers
                         movieDto.languages = languages;
                     }
 
-                    var gallerys = _context.Galleries.Where(g => g.MovieId == movieDto.id).ToList();
+                    var gallerys = _context.GalleryMovies.Where(g => g.MovieId == movieDto.id).ToList();
 
                     foreach (var item in gallerys)
                     {
@@ -205,9 +203,8 @@ namespace RMall.Controllers
                         describe = m.Describe,
                         director = m.Director,
                         duration = m.Duration,
-                        ratings = m.Ratings,
+                        favoriteCount = m.FavoriteCount,
                         trailer = m.Trailer,
-                        cast = m.Cast,
                         release_date = m.ReleaseDate,
                         createdAt = m.CreatedAt,
                         updatedAt = m.UpdatedAt,
@@ -289,9 +286,8 @@ namespace RMall.Controllers
                         Describe = model.describe,
                         Director = model.director,
                         Duration = model.duration,
-                        Ratings = model.ratings,
+                        FavoriteCount = 0,
                         Trailer = model.trailer,
-                        Cast = model.cast,
                         ReleaseDate = model.release_date,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,
@@ -334,9 +330,8 @@ namespace RMall.Controllers
                         describe = m.Describe,
                         director = m.Director,
                         duration = m.Duration,
-                        ratings = m.Ratings,
+                        favoriteCount = m.FavoriteCount,
                         trailer = m.Trailer,
-                        cast = m.Cast,
                         release_date = m.ReleaseDate,
                         createdAt = m.CreatedAt,
                         updatedAt = m.UpdatedAt,
@@ -384,9 +379,8 @@ namespace RMall.Controllers
                         Describe = model.describe,
                         Director = model.director,
                         Duration = model.duration,
-                        Ratings = model.ratings,
+                        FavoriteCount = existingMovie.FavoriteCount,
                         Trailer = model.trailer,
-                        Cast = model.cast,
                         ReleaseDate = model.release_date,
                         CreatedAt = existingMovie.CreatedAt,
                         UpdatedAt = DateTime.Now,

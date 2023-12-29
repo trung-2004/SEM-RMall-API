@@ -15,6 +15,8 @@ public partial class Show
 
     public DateTime StartDate { get; set; }
 
+    public string Language { get; set; } = null!;
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

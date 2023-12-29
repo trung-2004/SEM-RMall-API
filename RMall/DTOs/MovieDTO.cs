@@ -19,11 +19,9 @@ namespace RMall.DTOs
 
         public int duration { get; set; }
 
-        public string ratings { get; set; }
+        public int favoriteCount { get; set; }
 
         public string? trailer { get; set; }
-
-        public string cast { get; set; }
 
         public DateTime release_date { get; set; }
 

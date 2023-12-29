@@ -21,6 +21,9 @@ namespace RMall.Models.Shows
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime startDate { get; set; }
 
+        [Required(ErrorMessage = "Please enter language")]
+        public string language { get; set; }
+
         [Required(ErrorMessage = "Please enter seat pricing")] 
         public List<CreateSeatPricing> seatPricings { get; set; }
     }

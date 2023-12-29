@@ -19,13 +19,17 @@ public partial class RmallApiContext : DbContext
 
     public virtual DbSet<BrandIntroduction> BrandIntroductions { get; set; }
 
+    public virtual DbSet<Favorite> Favorites { get; set; }
+
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
     public virtual DbSet<Floor> Floors { get; set; }
 
     public virtual DbSet<Food> Foods { get; set; }
 
-    public virtual DbSet<Gallery> Galleries { get; set; }
+    public virtual DbSet<GalleryMall> GalleryMalls { get; set; }
+
+    public virtual DbSet<GalleryMovie> GalleryMovies { get; set; }
 
     public virtual DbSet<Genre> Genres { get; set; }
 
@@ -42,8 +46,6 @@ public partial class RmallApiContext : DbContext
     public virtual DbSet<OrderFood> OrderFoods { get; set; }
 
     public virtual DbSet<Promotion> Promotions { get; set; }
-
-    public virtual DbSet<Review> Reviews { get; set; }
 
     public virtual DbSet<Room> Rooms { get; set; }
 
@@ -138,6 +140,34 @@ public partial class RmallApiContext : DbContext
                 .HasConstraintName("FK__BrandIntr__brand__12FDD1B2");
         });
 
+        modelBuilder.Entity<Favorite>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Favorite__3213E83F1323E2E4");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DeletedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("deleted_at");
+            entity.Property(e => e.MovieId).HasColumnName("movie_id");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Movie).WithMany(p => p.Favorites)
+                .HasForeignKey(d => d.MovieId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Favorites__movie__52E34C9D");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Favorites)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Favorites__user___53D770D6");
+        });
+
         modelBuilder.Entity<Feedback>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Feedback__3213E83F1C6DB4F9");
@@ -188,7 +218,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Food>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Foods__3213E83F43328AB7");
+            entity.HasKey(e => e.Id).HasName("PK__Foods__3213E83F36F411A7");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -210,11 +240,33 @@ public partial class RmallApiContext : DbContext
                 .HasColumnName("updated_at");
         });
 
-        modelBuilder.Entity<Gallery>(entity =>
+        modelBuilder.Entity<GalleryMall>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Gallery__3213E83FF5739C66");
+            entity.HasKey(e => e.Id).HasName("PK__GalleryM__3213E83F0B699AE0");
 
-            entity.ToTable("Gallery");
+            entity.ToTable("GalleryMall");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DeletedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("deleted_at");
+            entity.Property(e => e.ImagePath)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("image_path");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
+        });
+
+        modelBuilder.Entity<GalleryMovie>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__GalleryM__3213E83FA2042853");
+
+            entity.ToTable("GalleryMovie");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -232,10 +284,10 @@ public partial class RmallApiContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
 
-            entity.HasOne(d => d.Movie).WithMany(p => p.Galleries)
+            entity.HasOne(d => d.Movie).WithMany(p => p.GalleryMovies)
                 .HasForeignKey(d => d.MovieId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Gallery__movie_i__65370702");
+                .HasConstraintName("FK__GalleryMo__movie__4E1E9780");
         });
 
         modelBuilder.Entity<Genre>(entity =>
@@ -266,7 +318,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Language>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Language__3213E83F3E94CF5D");
+            entity.HasKey(e => e.Id).HasName("PK__Language__3213E83F790BF147");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -286,17 +338,13 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Movie>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Movies__3213E83F6FC4D989");
+            entity.HasKey(e => e.Id).HasName("PK__Movies__3213E83F0630DDDA");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Actor)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("actor");
-            entity.Property(e => e.Cast)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("cast");
             entity.Property(e => e.CoverImage)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -315,14 +363,11 @@ public partial class RmallApiContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("director");
             entity.Property(e => e.Duration).HasColumnName("duration");
+            entity.Property(e => e.FavoriteCount).HasColumnName("favorite_count");
             entity.Property(e => e.MovieImage)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("movie_image");
-            entity.Property(e => e.Ratings)
-                .HasMaxLength(10)
-                .IsUnicode(false)
-                .HasColumnName("ratings");
             entity.Property(e => e.ReleaseDate)
                 .HasColumnType("datetime")
                 .HasColumnName("release_date");
@@ -340,7 +385,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<MovieGenre>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__MovieGen__3213E83FC0FEA233");
+            entity.HasKey(e => e.Id).HasName("PK__MovieGen__3213E83F9BF164C3");
 
             entity.ToTable("MovieGenre");
 
@@ -351,17 +396,17 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Genre).WithMany(p => p.MovieGenres)
                 .HasForeignKey(d => d.GenreId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__MovieGenr__genre__5CA1C101");
+                .HasConstraintName("FK__MovieGenr__genre__4589517F");
 
             entity.HasOne(d => d.Movie).WithMany(p => p.MovieGenres)
                 .HasForeignKey(d => d.MovieId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__MovieGenr__movie__5BAD9CC8");
+                .HasConstraintName("FK__MovieGenr__movie__44952D46");
         });
 
         modelBuilder.Entity<MovieLanguage>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__MovieLan__3213E83F6A0C88DC");
+            entity.HasKey(e => e.Id).HasName("PK__MovieLan__3213E83F5F49AF21");
 
             entity.ToTable("MovieLanguage");
 
@@ -372,17 +417,17 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Language).WithMany(p => p.MovieLanguages)
                 .HasForeignKey(d => d.LanguageId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__MovieLang__langu__625A9A57");
+                .HasConstraintName("FK__MovieLang__langu__4B422AD5");
 
             entity.HasOne(d => d.Movie).WithMany(p => p.MovieLanguages)
                 .HasForeignKey(d => d.MovieId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__MovieLang__movie__6166761E");
+                .HasConstraintName("FK__MovieLang__movie__4A4E069C");
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Orders__3213E83FE9E7B8D9");
+            entity.HasKey(e => e.Id).HasName("PK__Orders__3213E83FC097B076");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -410,6 +455,10 @@ public partial class RmallApiContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("payment_method");
+            entity.Property(e => e.QrCode)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("qrCode");
             entity.Property(e => e.ShowId).HasColumnName("show_id");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.Total)
@@ -423,46 +472,37 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Show).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.ShowId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Orders__show_id__7B264821");
+                .HasConstraintName("FK__Orders__show_id__6BAEFA67");
 
             entity.HasOne(d => d.User).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Orders__user_id__7C1A6C5A");
+                .HasConstraintName("FK__Orders__user_id__6CA31EA0");
         });
 
         modelBuilder.Entity<OrderFood>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OrderFoo__3213E83F20E93812");
+            entity.HasKey(e => e.Id).HasName("PK__OrderFoo__3213E83F7D9F5157");
 
             entity.ToTable("OrderFood");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.DeletedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("deleted_at");
             entity.Property(e => e.FoodId).HasColumnName("food_id");
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("price");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("updated_at");
 
             entity.HasOne(d => d.Food).WithMany(p => p.OrderFoods)
                 .HasForeignKey(d => d.FoodId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderFood__food___10216507");
+                .HasConstraintName("FK__OrderFood__food___7814D14C");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderFoods)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderFood__order__0F2D40CE");
+                .HasConstraintName("FK__OrderFood__order__7720AD13");
         });
 
         modelBuilder.Entity<Promotion>(entity =>
@@ -502,39 +542,6 @@ public partial class RmallApiContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
-        });
-
-        modelBuilder.Entity<Review>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Reviews__3213E83F368B62D2");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.DeletedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("deleted_at");
-            entity.Property(e => e.Message)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("message");
-            entity.Property(e => e.MovieId).HasColumnName("movie_id");
-            entity.Property(e => e.Score).HasColumnName("score");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("updated_at");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
-
-            entity.HasOne(d => d.Movie).WithMany(p => p.Reviews)
-                .HasForeignKey(d => d.MovieId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Reviews__movie_i__681373AD");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Reviews)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Reviews__user_id__690797E6");
         });
 
         modelBuilder.Entity<Room>(entity =>
@@ -595,7 +602,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<SeatPricing>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__SeatPric__3213E83F1C6795B3");
+            entity.HasKey(e => e.Id).HasName("PK__SeatPric__3213E83F88AE057F");
 
             entity.ToTable("SeatPricing");
 
@@ -618,12 +625,12 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.SeatType).WithMany(p => p.SeatPricings)
                 .HasForeignKey(d => d.SeatTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__SeatPrici__seat___7849DB76");
+                .HasConstraintName("FK__SeatPrici__seat___5B78929E");
 
             entity.HasOne(d => d.Show).WithMany(p => p.SeatPricings)
                 .HasForeignKey(d => d.ShowId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__SeatPrici__show___7755B73D");
+                .HasConstraintName("FK__SeatPrici__show___5A846E65");
         });
 
         modelBuilder.Entity<SeatType>(entity =>
@@ -698,7 +705,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Show>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Shows__3213E83FF38C6D48");
+            entity.HasKey(e => e.Id).HasName("PK__Shows__3213E83FEE0EF03B");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -707,6 +714,10 @@ public partial class RmallApiContext : DbContext
             entity.Property(e => e.DeletedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("deleted_at");
+            entity.Property(e => e.Language)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("language");
             entity.Property(e => e.MovieId).HasColumnName("movie_id");
             entity.Property(e => e.RoomId).HasColumnName("room_id");
             entity.Property(e => e.ShowCode)
@@ -723,31 +734,35 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Movie).WithMany(p => p.Shows)
                 .HasForeignKey(d => d.MovieId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Shows__movie_id__73852659");
+                .HasConstraintName("FK__Shows__movie_id__56B3DD81");
 
             entity.HasOne(d => d.Room).WithMany(p => p.Shows)
                 .HasForeignKey(d => d.RoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Shows__room_id__74794A92");
+                .HasConstraintName("FK__Shows__room_id__57A801BA");
         });
 
         modelBuilder.Entity<Ticket>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Tickets__3213E83F8BFCC7FB");
+            entity.HasKey(e => e.Id).HasName("PK__Tickets__3213E83F3D56C8DF");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Code)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("code");
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
             entity.Property(e => e.DeletedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("deleted_at");
+            entity.Property(e => e.IsUsed).HasColumnName("isUsed");
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("price");
-            entity.Property(e => e.RowNum).HasColumnName("row_num");
-            entity.Property(e => e.SeatNum).HasColumnName("seat_num");
+            entity.Property(e => e.SeatId).HasColumnName("seat_id");
             entity.Property(e => e.StartDate)
                 .HasColumnType("datetime")
                 .HasColumnName("start_date");
@@ -758,7 +773,12 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Tickets__order_i__7EF6D905");
+                .HasConstraintName("FK__Tickets__order_i__6F7F8B4B");
+
+            entity.HasOne(d => d.Seat).WithMany(p => p.Tickets)
+                .HasForeignKey(d => d.SeatId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Tickets__seat_id__7073AF84");
         });
 
         modelBuilder.Entity<User>(entity =>

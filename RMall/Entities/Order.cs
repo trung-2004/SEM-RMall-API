@@ -27,6 +27,8 @@ public partial class Order
 
     public int IsPaid { get; set; }
 
+    public string QrCode { get; set; } = null!;
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

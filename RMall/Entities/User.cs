@@ -35,9 +35,9 @@ public partial class User
 
     public DateTime? DeletedAt { get; set; }
 
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ICollection<UserPromotion> UserPromotions { get; set; } = new List<UserPromotion>();
 }
