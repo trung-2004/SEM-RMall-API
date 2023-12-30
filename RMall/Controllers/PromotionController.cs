@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
@@ -6,6 +7,7 @@ using RMall.Entities;
 using RMall.Models.General;
 using RMall.Models.Promotions;
 using RMall.Models.UserPromotions;
+using System.Security.Claims;
 
 namespace RMall.Controllers
 {
@@ -314,7 +316,7 @@ namespace RMall.Controllers
             }
         }
 
-        [HttpGet("get-promotion-user")]
+        [HttpGet("get-promotionUser")]
         public async Task<IActionResult> GetAllPromotionUser()
         {
             try
@@ -355,78 +357,129 @@ namespace RMall.Controllers
         [HttpPost("create-promotion-user")]
         public async Task<IActionResult> CreateUserPromotion(CreateUserPromotion model)
         {
-            try
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            if (!identity.IsAuthenticated)
             {
-                Promotion promotion = await _context.Promotions.FirstAsync(p => p.Id == model.promotionId);
-                if (promotion == null)
+                return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+            }
+            if(ModelState.IsValid)
+            {
+                try
                 {
-                    return NotFound(new GeneralServiceResponse
+                    var userClaims = identity.Claims;
+                    var userId = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                    var user = await _context.Users
+                        .FirstOrDefaultAsync(u => u.Id == Convert.ToInt32(userId));
+
+                    if (user == null)
                     {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "Not Found",
-                        Data = ""
+                        return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+                    }
+
+                    Promotion promotion = await _context.Promotions.FirstAsync(p => p.Id == model.promotionId);
+                    if (promotion == null)
+                    {
+                        return NotFound(new GeneralServiceResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "Not Found",
+                            Data = ""
+                        });
+                    }
+                    var userPromotionExisting = await _context.UserPromotions.Where(up => up.PromotionId == model.promotionId).ToListAsync();
+
+                    if (userPromotionExisting.Count > promotion.Limit)
+                    {
+                        return BadRequest(new GeneralServiceResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "Promotion has ended",
+                            Data = ""
+                        });
+                    }
+
+                    UserPromotion userPromotion = new UserPromotion
+                    {
+                        UserId = user.Id,
+                        PromotionId = model.promotionId,
+                        IsUsed = 0,
+                        UsedAt = null,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        DeletedAt = null
+                    };
+                    _context.UserPromotions.Add(userPromotion);
+                    await _context.SaveChangesAsync();
+
+                    return Created($"get-by-id?id={userPromotion.Id}", new UserPromotionDTO
+                    {
+                        id = userPromotion.Id,
+                        userId = userPromotion.UserId,
+                        promotionId = userPromotion.PromotionId,
+                        promotionName = null,
+                        nameUser = null,
+                        isUsed = userPromotion.IsUsed,
+                        usedAt = userPromotion.UsedAt,
+                        createdAt = userPromotion.CreatedAt,
+                        updatedAt = userPromotion.UpdatedAt,
+                        deletedAt = userPromotion.DeletedAt,
                     });
                 }
-                var userPromotionExisting = await _context.UserPromotions.Where(up => up.PromotionId == model.promotionId).ToListAsync();
-
-                if (userPromotionExisting.Count > promotion.Limit)
+                catch (Exception ex)
                 {
-                    return BadRequest(new GeneralServiceResponse
+                    var response = new GeneralServiceResponse
                     {
                         Success = false,
                         StatusCode = 400,
-                        Message = "Promotion has ended",
+                        Message = ex.Message,
                         Data = ""
-                    });
+                    };
+
+                    return BadRequest(response);
                 }
-
-                UserPromotion userPromotion = new UserPromotion
-                {
-                    UserId = model.userId,
-                    PromotionId = model.promotionId,
-                    IsUsed = 0,
-                    UsedAt = null,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
-                    DeletedAt = null
-                };
-                _context.UserPromotions.Add(userPromotion);
-                await _context.SaveChangesAsync();
-
-                return Created($"get-by-id?id={userPromotion.Id}", new UserPromotionDTO
-                {
-                    id = userPromotion.Id,
-                    userId = userPromotion.UserId,
-                    promotionId = userPromotion.PromotionId,
-                    promotionName = null,
-                    nameUser = null,
-                    isUsed = userPromotion.IsUsed,
-                    usedAt = userPromotion.UsedAt,
-                    createdAt = userPromotion.CreatedAt,
-                    updatedAt = userPromotion.UpdatedAt,
-                    deletedAt = userPromotion.DeletedAt,
-                });
-            } catch (Exception ex)
-            {
-                var response = new GeneralServiceResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = ex.Message,
-                    Data = ""
-                };
-
-                return BadRequest(response);
             }
+            var validationErrors = ModelState.Values.SelectMany(v => v.Errors).Select(v => v.ErrorMessage);
+
+            var validationResponse = new GeneralServiceResponse
+            {
+                Success = false,
+                StatusCode = 400,
+                Message = "Validation errors",
+                Data = string.Join(" | ", validationErrors)
+            };
+
+            return BadRequest(validationResponse);
         }
 
         [HttpGet("get-promotion-by-user")]
-        public async Task<IActionResult> GetPromotionByUser(int userId)
+        [Authorize]
+        public async Task<IActionResult> GetPromotionByUser()
         {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            if (!identity.IsAuthenticated)
+            {
+                return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+            }
+
             try
             {
-                List<UserPromotion> userPromotions = await _context.UserPromotions.Include(up => up.Promotion).Where(up => up.UserId == userId && up.IsUsed == 0 && up.Promotion.EndDate >= DateTime.Now).OrderByDescending(up => up.Id).ToListAsync();
+                var userClaims = identity.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == Convert.ToInt32(userId));
+
+                if (user == null)
+                {
+                    return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+                }
+
+                List<UserPromotion> userPromotions = await _context.UserPromotions.Include(up => up.Promotion).Where(up => up.UserId == user.Id && up.IsUsed == 0 && up.Promotion.EndDate >= DateTime.Now).OrderByDescending(up => up.Id).ToListAsync();
                 List<UserPromotionDTO> result = new List<UserPromotionDTO>();
                 foreach (var item in userPromotions)
                 {
@@ -460,10 +513,28 @@ namespace RMall.Controllers
         }
 
         [HttpGet("checkDiscount")]
-        public async Task<IActionResult> CheckDiscount(string couponCode, int userId, decimal total)
+        [Authorize]
+        public async Task<IActionResult> CheckDiscount(string couponCode, decimal total)
         {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            if (!identity.IsAuthenticated)
+            {
+                return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+            }
             try
             {
+                var userClaims = identity.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == Convert.ToInt32(userId));
+
+                if (user == null)
+                {
+                    return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+                }
+
                 var promotion = await _context.Promotions
                     .Where(promotion => promotion.CouponCode == couponCode)
                     .FirstOrDefaultAsync();
@@ -471,7 +542,7 @@ namespace RMall.Controllers
                 if (promotion != null && promotion.StartDate <= DateTime.Now && promotion.EndDate >= DateTime.Now)
                 {
                     var userPromotion = await _context.UserPromotions
-                        .Where(up => up.UserId == userId && up.PromotionId == promotion.Id)
+                        .Where(up => up.UserId == user.Id && up.PromotionId == promotion.Id)
                         .FirstOrDefaultAsync();
 
                     if (userPromotion != null)
@@ -546,13 +617,38 @@ namespace RMall.Controllers
         }
 
         [HttpPost("discounts")]
+        [Authorize]
         public async Task<IActionResult> Discounts(string promotionCode, decimal total)
         {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            if (!identity.IsAuthenticated)
+            {
+                return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+            }
             try
             {
+                var userClaims = identity.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == Convert.ToInt32(userId));
+
+                if (user == null)
+                {
+                    return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+                }
+
                 var promotion = await _context.Promotions.FirstOrDefaultAsync(p => p.CouponCode.Equals(promotionCode));
 
                 var finalTotal = total - total * ((decimal)promotion.DiscountPercentage / 100);
+
+                var userPromotion = await _context.UserPromotions.FirstOrDefaultAsync(up => up.PromotionId == promotion.Id && up.UserId == user.Id);
+
+                userPromotion.IsUsed = 1;
+                userPromotion.UsedAt = DateTime.Now;
+
+                await _context.SaveChangesAsync();
 
                 return Ok(new GeneralServiceResponse
                 {

@@ -13,6 +13,8 @@ namespace RMall.DTOs
 
         public string movie_image { get; set; }
 
+        public string cover_image { get; set; }
+
         public string? describe { get; set; }
 
         public string director { get; set; }

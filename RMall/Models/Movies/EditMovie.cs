@@ -17,6 +17,9 @@ namespace RMall.Models.Movies
 
         [Required(ErrorMessage = "Please enter movie image")]
         public IFormFile movie_image { get; set; }
+   
+        [Required(ErrorMessage = "Please enter cover image")]
+        public IFormFile cover_image { get; set; }
 
         public string? describe { get; set; }
 
@@ -26,16 +29,7 @@ namespace RMall.Models.Movies
         [Required(ErrorMessage = "Please enter duration")]
         public int duration { get; set; }
 
-        [Required(ErrorMessage = "Please enter language")]
-        public string language { get; set; }
-
-        [Required(ErrorMessage = "Please enter ratings")]
-        public string ratings { get; set; }
-
         public string? trailer { get; set; }
-
-        [Required(ErrorMessage = "Please enter cast")]
-        public string cast { get; set; }
 
         [Required(ErrorMessage = "Please enter release date")]
         [DataType(DataType.Date)]

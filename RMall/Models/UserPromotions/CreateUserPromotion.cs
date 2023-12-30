@@ -1,9 +1,10 @@
-﻿namespace RMall.Models.UserPromotions
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RMall.Models.UserPromotions
 {
     public class CreateUserPromotion
     {
-        public int userId { get; set; }
-
+        [Required]
         public int promotionId { get; set; }
 
     }

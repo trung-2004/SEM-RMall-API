@@ -218,7 +218,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Food>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Foods__3213E83F36F411A7");
+            entity.HasKey(e => e.Id).HasName("PK__Foods__3213E83F4B5E8B5C");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -227,6 +227,10 @@ public partial class RmallApiContext : DbContext
             entity.Property(e => e.DeletedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("deleted_at");
+            entity.Property(e => e.Image)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("image");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -482,7 +486,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<OrderFood>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OrderFoo__3213E83F7D9F5157");
+            entity.HasKey(e => e.Id).HasName("PK__OrderFoo__3213E83F06169D6B");
 
             entity.ToTable("OrderFood");
 
@@ -497,12 +501,12 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Food).WithMany(p => p.OrderFoods)
                 .HasForeignKey(d => d.FoodId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderFood__food___7814D14C");
+                .HasConstraintName("FK__OrderFood__food___093F5D4E");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderFoods)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderFood__order__7720AD13");
+                .HasConstraintName("FK__OrderFood__order__084B3915");
         });
 
         modelBuilder.Entity<Promotion>(entity =>
@@ -572,7 +576,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Seat>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Seats__3213E83F6233BBCA");
+            entity.HasKey(e => e.Id).HasName("PK__Seats__3213E83F6A87639C");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -592,12 +596,12 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Room).WithMany(p => p.Seats)
                 .HasForeignKey(d => d.RoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Seats__room_id__6FB49575");
+                .HasConstraintName("FK__Seats__room_id__7EC1CEDB");
 
             entity.HasOne(d => d.SeatType).WithMany(p => p.Seats)
                 .HasForeignKey(d => d.SeatTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Seats__seat_type__70A8B9AE");
+                .HasConstraintName("FK__Seats__seat_type__7FB5F314");
         });
 
         modelBuilder.Entity<SeatPricing>(entity =>
@@ -744,7 +748,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Ticket>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Tickets__3213E83F3D56C8DF");
+            entity.HasKey(e => e.Id).HasName("PK__Tickets__3213E83FDD9C16A2");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Code)
@@ -773,12 +777,12 @@ public partial class RmallApiContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Tickets__order_i__6F7F8B4B");
+                .HasConstraintName("FK__Tickets__order_i__02925FBF");
 
             entity.HasOne(d => d.Seat).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.SeatId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Tickets__seat_id__7073AF84");
+                .HasConstraintName("FK__Tickets__seat_id__038683F8");
         });
 
         modelBuilder.Entity<User>(entity =>

@@ -5,6 +5,7 @@ using RMall.DTOs;
 using RMall.Entities;
 using RMall.Models.Foods;
 using RMall.Models.General;
+using RMall.Service.UploadFiles;
 
 namespace RMall.Controllers
 {
@@ -13,9 +14,11 @@ namespace RMall.Controllers
     public class FoodController : ControllerBase
     {
         private readonly RmallApiContext _context;
-        public FoodController(RmallApiContext context)
+        private readonly IImgService _imgService;
+        public FoodController(RmallApiContext context, ImgService imgService)
         {
             _context = context;
+            _imgService = imgService;
         }
 
         [HttpGet("get-all")]
@@ -31,6 +34,7 @@ namespace RMall.Controllers
                     {
                         id = item.Id,
                         name = item.Name,
+                        image = item.Image,
                         price = item.Price,
                         quantity = item.Quantity,
                         createdAt = item.CreatedAt,
@@ -53,34 +57,86 @@ namespace RMall.Controllers
             }
         }
 
+        [HttpGet("trash-can")]
+        public async Task<IActionResult> TrashCan()
+        {
+            try
+            {
+                List<Food> foods = await _context.Foods.Where(f => f.DeletedAt != null).OrderByDescending(f => f.Id).ToListAsync();
+                List<FoodDTO> result = new List<FoodDTO>();
+                foreach (var item in foods)
+                {
+                    result.Add(new FoodDTO
+                    {
+                        id = item.Id,
+                        name = item.Name,
+                        image = item.Image,
+                        price = item.Price,
+                        quantity = item.Quantity,
+                        createdAt = item.CreatedAt,
+                        updatedAt = item.UpdatedAt,
+                        deletedAt = item.DeletedAt,
+                    });
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
         [HttpPost("create")]
         public async Task<IActionResult> CreateFood(CreateFood model)
         {
             try
             {
-                Food food = new Food
+                var imageUrl = await _imgService.UploadImageAsync(model.image);
+                if (imageUrl != null)
                 {
-                    Name = model.name,
-                    Price = model.price,
-                    Quantity = model.quantity,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
-                    DeletedAt = null
-                };
+                    Food food = new Food
+                    {
+                        Name = model.name,
+                        Image = imageUrl,
+                        Price = model.price,
+                        Quantity = model.quantity,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        DeletedAt = null
+                    };
 
-                _context.Foods.Add(food);
-                await _context.SaveChangesAsync();
+                    _context.Foods.Add(food);
+                    await _context.SaveChangesAsync();
 
-                return Created($"get-by-id?id={food.Id}", new FoodDTO
+                    return Created($"get-by-id?id={food.Id}", new FoodDTO
+                    {
+                        id = food.Id,
+                        name = food.Name,
+                        price = food.Price,
+                        quantity = food.Quantity,
+                        createdAt = food.CreatedAt,
+                        updatedAt = food.UpdatedAt,
+                        deletedAt = food.DeletedAt,
+                    });
+                }
+                else
                 {
-                    id = food.Id,
-                    name = food.Name,
-                    price = food.Price,
-                    quantity = food.Quantity,
-                    createdAt = food.CreatedAt,
-                    updatedAt = food.UpdatedAt,
-                    deletedAt = food.DeletedAt,
-                });
+                    return BadRequest(new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "Please provide an avatar.",
+                        Data = ""
+                    });
+                }
 
             } catch (Exception ex)
             {
@@ -112,6 +168,7 @@ namespace RMall.Controllers
                         Data = ""
                     });
                 }
+
                 Food food = new Food
                 {
                     Id = model.id,
@@ -122,6 +179,28 @@ namespace RMall.Controllers
                     UpdatedAt = DateTime.Now,
                     DeletedAt = null
                 };
+
+                if (model.image != null)
+                {
+                    string imageUrl = await _imgService.UploadImageAsync(model.image);
+
+                    if (imageUrl == null)
+                    {
+                        return BadRequest(new GeneralServiceResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "Failed to upload avatar.",
+                            Data = ""
+                        });
+                    }
+
+                    food.Image = imageUrl;
+                }
+                else
+                {
+                    food.Image = foodExisting.Image;
+                }
 
                 _context.Foods.Update(food);
                 await _context.SaveChangesAsync();
@@ -148,19 +227,16 @@ namespace RMall.Controllers
             }
         }
 
-        [HttpDelete("delete")]
-        public async Task<IActionResult> SoftDelete(List<int> ids)
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> SoftDelete(int id)
         {
             try
             {
-                foreach (var id in ids)
-                {
-                    Food food = await _context.Foods.FindAsync(id);
+                Food food = await _context.Foods.FindAsync(id);
 
-                    if (food != null)
-                    {
-                        food.DeletedAt = DateTime.Now;
-                    }
+                if (food != null)
+                {
+                    food.DeletedAt = DateTime.Now;
                 }
 
                 await _context.SaveChangesAsync();
