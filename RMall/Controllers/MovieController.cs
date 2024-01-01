@@ -85,6 +85,10 @@ namespace RMall.Controllers
                         movieDto.languages = languages;
                     }
 
+                    var ticketCount = await _context.Tickets.Include(t => t.Order).ThenInclude(t => t.Show).ThenInclude(t => t.Movie).Where(t => t.Order.Show.Movie.Id == m.Id).CountAsync();
+
+                    movieDto.totalTicket = ticketCount;
+
                     result.Add(movieDto);
                 }
                 return Ok(result);
@@ -142,8 +146,9 @@ namespace RMall.Controllers
                             name = item.Genre.Name
                         };
                         genres.Add(genre);
-                        movieDto.genres = genres;
                     }
+
+                    movieDto.genres = genres;
 
                     foreach (var item in m.MovieLanguages)
                     {
@@ -153,8 +158,9 @@ namespace RMall.Controllers
                             name = item.Language.Name
                         };
                         languages.Add(language);
-                        movieDto.languages = languages;
                     }
+
+                    movieDto.languages = languages;
 
                     var gallerys = _context.GalleryMovies.Where(g => g.MovieId == movieDto.id).ToList();
 
@@ -166,8 +172,10 @@ namespace RMall.Controllers
                             imagePath = item.ImagePath,
                         };
                         galleries.Add(gallery);
-                        movieDto.galeries = galleries;
                     }
+                    movieDto.galeries = galleries;
+
+                    movieDto.favoriteCount = await _context.Favorites.Where(f => f.MovieId == m.Id).CountAsync();
 
                     return Ok(movieDto);
                 }
@@ -275,8 +283,8 @@ namespace RMall.Controllers
                     });
                 }
 
-                var imageUrl = await _imgService.UploadImageAsync(model.movie_image);
-                var coverUrl = await _imgService.UploadImageAsync(model.cover_image);
+                var imageUrl = await _imgService.UploadImageAsync(model.movie_image, "movies");
+                var coverUrl = await _imgService.UploadImageAsync(model.cover_image, "movies");
 
                 if (imageUrl != null)
                 {
@@ -392,7 +400,7 @@ namespace RMall.Controllers
 
                     if (model.movie_image != null)
                     {
-                        string imageUrl = await _imgService.UploadImageAsync(model.movie_image);
+                        string imageUrl = await _imgService.UploadImageAsync(model.movie_image, "movies");
 
                         if (imageUrl == null)
                         {

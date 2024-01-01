@@ -2,7 +2,7 @@
 {
     public class ImgService : IImgService
     {
-        public async Task<string> UploadImageAsync(IFormFile avatar)
+        public async Task<string> UploadImageAsync(IFormFile avatar, string storageType)
         {
             if (avatar != null && avatar.Length > 0)
             {
@@ -12,7 +12,7 @@
                 }
                 string fileName = GenerateUniqueFileName(avatar);
 
-                string uploadDirectory = GetUploadDirectory();
+                string uploadDirectory = GetUploadDirectory(storageType);
                 string filePath = Path.Combine(uploadDirectory, fileName);
 
                 Directory.CreateDirectory(uploadDirectory);
@@ -33,9 +33,9 @@
             return $"{Guid.NewGuid()}{Path.GetExtension(avatar.FileName)}";
         }
 
-        private string GetUploadDirectory()
+        private string GetUploadDirectory(string storageType)
         {
-            return Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "movies");
+            return Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", storageType);
         }
 
         private string GenerateFileUrl(string fileName)

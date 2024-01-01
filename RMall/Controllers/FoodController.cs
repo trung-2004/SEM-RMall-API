@@ -15,7 +15,7 @@ namespace RMall.Controllers
     {
         private readonly RmallApiContext _context;
         private readonly IImgService _imgService;
-        public FoodController(RmallApiContext context, ImgService imgService)
+        public FoodController(RmallApiContext context, IImgService imgService)
         {
             _context = context;
             _imgService = imgService;
@@ -95,11 +95,11 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateFood(CreateFood model)
+        public async Task<IActionResult> CreateFood([FromForm]CreateFood model)
         {
             try
             {
-                var imageUrl = await _imgService.UploadImageAsync(model.image);
+                var imageUrl = await _imgService.UploadImageAsync(model.image, "foods");
                 if (imageUrl != null)
                 {
                     Food food = new Food
@@ -153,7 +153,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
-        public async Task<IActionResult> EditFood(EditFood model)
+        public async Task<IActionResult> EditFood([FromForm]EditFood model)
         {
             try
             {
@@ -182,7 +182,7 @@ namespace RMall.Controllers
 
                 if (model.image != null)
                 {
-                    string imageUrl = await _imgService.UploadImageAsync(model.image);
+                    string imageUrl = await _imgService.UploadImageAsync(model.image, "foods");
 
                     if (imageUrl == null)
                     {

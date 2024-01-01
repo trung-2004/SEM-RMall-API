@@ -27,6 +27,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\uploads\movies\" />
     <Folder Include="wwwroot\uploads\gallery\" />
+    <Folder Include="wwwroot\uploads\foods\" />
   </ItemGroup>
 
 </Project>

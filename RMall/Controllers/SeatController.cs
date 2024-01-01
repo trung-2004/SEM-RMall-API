@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
 using RMall.Entities;
 using RMall.Models.General;
+using RMall.Models.Seats;
 
 namespace RMall.Controllers
 {
@@ -39,6 +40,54 @@ namespace RMall.Controllers
                 }
                 return Ok(result);
             } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("get-by-showCode/{ShowCode}")]
+        public async Task<IActionResult> GetAllSeatByShow(string ShowCode)
+        {
+            try
+            {
+                var show = await _context.Shows.Include(s => s.Orders).ThenInclude(s => s.Tickets).FirstOrDefaultAsync(s => s.ShowCode.Equals(ShowCode) && s.DeletedAt == null);
+                if (show == null)
+                {
+                    return NotFound();
+                }
+                List<Seat> seats = await _context.Seats
+                    .Where(s => s.RoomId == show.RoomId)
+                    .OrderByDescending(s => s.SeatTypeId)
+                    .ToListAsync();
+
+                List<int> seatsBooked = show.Orders
+                    .SelectMany(o => o.Tickets.Select(t => t.SeatId))
+                    .ToList();
+
+                List<SeatResponse> result = seats.Select(seat => new SeatResponse
+                {
+                    id = seat.Id,
+                    roomId = seat.RoomId,
+                    seatTypeId = seat.SeatTypeId,
+                    rowNumber = seat.RowNumber,
+                    seatNumber = seat.SeatNumber,
+                    createdAt = seat.CreatedAt,
+                    updatedAt = seat.UpdatedAt,
+                    deletedAt = seat.DeletedAt,
+                    isBooked = seatsBooked.Contains(seat.Id)
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
             {
                 var response = new GeneralServiceResponse
                 {

@@ -2,6 +2,6 @@
 {
     public interface IImgService
     {
-        Task<string> UploadImageAsync(IFormFile img);
+        Task<string> UploadImageAsync(IFormFile img, string storageType);
     }
 }

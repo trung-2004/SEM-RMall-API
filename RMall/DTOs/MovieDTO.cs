@@ -23,6 +23,8 @@ namespace RMall.DTOs
 
         public int favoriteCount { get; set; }
 
+        public long? totalTicket { get; set; }
+
         public string? trailer { get; set; }
 
         public DateTime release_date { get; set; }
