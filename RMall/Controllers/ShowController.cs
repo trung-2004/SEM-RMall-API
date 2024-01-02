@@ -28,6 +28,7 @@ namespace RMall.Controllers
             try
             {
                 List<Show> shows = await _context.Shows.Include(s => s.Movie).Include(s => s.Room).Include(m => m.SeatPricings).ThenInclude(m => m.SeatType).Where(m => m.DeletedAt == null).OrderByDescending(m => m.Id).ToListAsync();
+                
                 List<ShowDTO> result = new List<ShowDTO>();
                 foreach (Show s in shows)
                 {
@@ -99,6 +100,7 @@ namespace RMall.Controllers
 
                     return BadRequest(response);
                 }
+
                 Show show = new Show
                 {
                     MovieId = model.movieId,
@@ -110,6 +112,18 @@ namespace RMall.Controllers
                     UpdatedAt = DateTime.Now,
                     DeletedAt = null
                 };
+
+                var movie = await _context.Movies.FindAsync(model.movieId);
+
+                var endDate = model.startDate.AddMinutes(movie.Duration + 10);
+                var startDate = model.startDate.AddMinutes(-10);
+                var isRoomAvailable = await IsRoomAvailableForShow(model.roomId, startDate, endDate);
+
+                if (!isRoomAvailable)
+                {
+                    return BadRequest();
+                }
+
 
                 _context.Shows.Add(show);
                 await _context.SaveChangesAsync();
@@ -153,6 +167,17 @@ namespace RMall.Controllers
 
                 return BadRequest(response);
             }
+        }
+
+        private async Task<bool> IsRoomAvailableForShow(int roomId, DateTime startDate, DateTime endDate)
+        {
+            var isAvailable = await _context.Shows.Include(s => s.Movie)
+                .AnyAsync(s => s.RoomId == roomId &&
+                               ((startDate >= s.StartDate && startDate <= s.StartDate.AddMinutes(s.Movie.Duration)) ||
+                                (endDate >= s.StartDate && endDate <= s.StartDate.AddMinutes(s.Movie.Duration)) ||
+                                (startDate <= s.StartDate && endDate >= s.StartDate.AddMinutes(s.Movie.Duration))));
+
+            return !isAvailable;
         }
 
         [HttpGet("get-by-movie/{id}")]
