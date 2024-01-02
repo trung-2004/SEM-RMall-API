@@ -57,6 +57,53 @@ namespace RMall.Controllers
             }
         }
 
+        [HttpGet("get-by-id/{id}")]
+        public async Task<IActionResult> getFoodById(int id)
+        {
+            try
+            {
+                Food food = await _context.Foods.FirstOrDefaultAsync(f => f.Id == id && f.DeletedAt == null);
+                if (food != null)
+                {
+                    return Ok(new FoodDTO
+                    {
+                        id = food.Id,
+                        name = food.Name,
+                        image = food.Image,
+                        price = food.Price,
+                        quantity = food.Quantity,
+                        createdAt = food.CreatedAt,
+                        updatedAt = food.UpdatedAt,
+                        deletedAt = food.DeletedAt
+
+                    });
+                }
+                else
+                {
+                    var response = new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "Not Found",
+                        Data = ""
+                    };
+
+                    return NotFound(response);
+                }
+                } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("trash-can")]
         public async Task<IActionResult> TrashCan()
         {

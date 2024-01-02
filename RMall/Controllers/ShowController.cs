@@ -209,5 +209,44 @@ namespace RMall.Controllers
                 return BadRequest(response);
             }
         }
+
+        [HttpGet("get-by-room/{id}")]
+        public async Task<IActionResult> GetShowByRoom(int id)
+        {
+            try
+            {
+                var shows = _context.Shows.Where(s => s.RoomId == id).OrderBy(s => s.StartDate).AsQueryable();
+                List<ShowDTO> result = new List<ShowDTO>();
+                foreach (var show in shows)
+                {
+                    result.Add(new ShowDTO
+                    {
+                        id = show.Id,
+                        movieId = show.MovieId,
+                        roomId = show.RoomId,
+                        startDate = show.StartDate,
+                        showCode = show.ShowCode,
+                        language = show.Language,
+                        createdAt = show.CreatedAt,
+                        updatedAt = show.UpdatedAt,
+                        deletedAt = show.DeletedAt,
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
     }
 }

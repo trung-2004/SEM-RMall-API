@@ -54,6 +54,50 @@ namespace RMall.Controllers
 
         }
 
+        [HttpGet("get-by-id/{id}")]
+        public async Task<IActionResult> getGenreById(int id)
+        {
+            try
+            {
+                Genre genre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == id && g.DeletedAt == null);
+                if (genre != null)
+                {
+                    return Ok(new GenreDTO
+                    {
+                        id = genre.Id,
+                        name = genre.Name,
+                        slug = genre.Slug,
+                        createdAt = genre.CreatedAt,
+                        updatedAt = genre.UpdatedAt,
+                        deletedAt = genre.DeletedAt,    
+                    });
+                }
+                else
+                {
+                    var response = new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "Not Found",
+                        Data = ""
+                    };
+
+                    return NotFound(response);
+                }
+            } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
         [HttpPost("create")]
         public async Task<IActionResult> CreateGenre(CreateGenre model)
         {

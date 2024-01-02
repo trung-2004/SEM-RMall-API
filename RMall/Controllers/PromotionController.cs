@@ -61,6 +61,56 @@ namespace RMall.Controllers
             }
         }
 
+        [HttpGet("get-by-id/{id}")]
+        public async Task<IActionResult> GetPromotionById(int id)
+        {
+            try
+            {
+                Promotion promotion = await _context.Promotions.FirstOrDefaultAsync(p => p.Id == id && p.DeletedAt == null);
+                if(promotion != null)
+                {
+                    return Ok(new PromotionDTO
+                    {
+                        id = promotion.Id,
+                        name = promotion.Name,
+                        slug = promotion.Slug,
+                        startDate = promotion.StartDate,
+                        endDate = promotion.EndDate,
+                        discountPercentage = promotion.DiscountPercentage,
+                        limit = promotion.Limit,
+                        couponCode = promotion.CouponCode,
+                        minPurchaseAmount = promotion.MinPurchaseAmount,
+                        createdAt = promotion.CreatedAt,
+                        updatedAt = promotion.UpdatedAt,
+                        deletedAt = promotion.DeletedAt,
+                    });
+                }
+                else
+                {
+                    var response = new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "Not Found",
+                        Data = ""
+                    };
+
+                    return NotFound(response);
+                }
+            } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("trash-can")]
         public async Task<IActionResult> TrashCan()
         {
