@@ -53,6 +53,16 @@ namespace RMall.Controllers
             }
         }
 
+        private async Task<decimal> PriceSeat(int showId, int seatTypeId)
+        {
+            var price = await _context.SeatPricings.FirstOrDefaultAsync(s => s.SeatTypeId == seatTypeId && s.ShowId == showId);
+            if (price == null)
+            {
+                return 0;
+            }
+            return price.Price;
+        }
+
         [HttpGet("get-by-showCode/{ShowCode}")]
         public async Task<IActionResult> GetAllSeatByShow(string ShowCode)
         {
@@ -72,17 +82,27 @@ namespace RMall.Controllers
                     .SelectMany(o => o.Tickets.Select(t => t.SeatId))
                     .ToList();
 
-                List<SeatResponse> result = seats.Select(seat => new SeatResponse
+                var seatPricings = await _context.SeatPricings
+                    .Where(sp => sp.ShowId == show.Id)
+                    .ToListAsync();
+
+                List<SeatResponse> result = seats.Select(seat =>
                 {
-                    id = seat.Id,
-                    roomId = seat.RoomId,
-                    seatTypeId = seat.SeatTypeId,
-                    rowNumber = seat.RowNumber,
-                    seatNumber = seat.SeatNumber,
-                    createdAt = seat.CreatedAt,
-                    updatedAt = seat.UpdatedAt,
-                    deletedAt = seat.DeletedAt,
-                    isBooked = seatsBooked.Contains(seat.Id)
+                    var seatPricing = seatPricings.FirstOrDefault(sp => sp.SeatTypeId == seat.SeatTypeId);
+                    decimal price = seatPricing != null ? seatPricing.Price : 0;
+                    return new SeatResponse
+                    {
+                        id = seat.Id,
+                        roomId = seat.RoomId,
+                        seatTypeId = seat.SeatTypeId,
+                        rowNumber = seat.RowNumber,
+                        seatNumber = seat.SeatNumber,
+                        createdAt = seat.CreatedAt,
+                        updatedAt = seat.UpdatedAt,
+                        deletedAt = seat.DeletedAt,
+                        isBooked = seatsBooked.Contains(seat.Id),
+                        price = price,
+                    };
                 }).ToList();
 
                 return Ok(result);

@@ -6,6 +6,10 @@
 
         public int showId { get; set; }
 
+        public string? movieTitle { get; set; }
+
+        public string? imageMovie { get; set; }
+
         public int userId { get; set; }
 
         public decimal total { get; set; }

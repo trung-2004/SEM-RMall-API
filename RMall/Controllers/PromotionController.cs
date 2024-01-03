@@ -61,6 +61,47 @@ namespace RMall.Controllers
             }
         }
 
+        [HttpGet("get-all-for-user")]
+        public async Task<IActionResult> GetAllPromotionForUser()
+        {
+            try
+            {
+                List<Promotion> promotions = await _context.Promotions.Where(p => p.DeletedAt == null && p.StartDate <= DateTime.Now && p.EndDate >= DateTime.Now).OrderByDescending(p => p.Id).ToListAsync();
+                List<PromotionDTO> result = new List<PromotionDTO>();
+                foreach (var item in promotions)
+                {
+                    result.Add(new PromotionDTO
+                    {
+                        id = item.Id,
+                        name = item.Name,
+                        slug = item.Slug,
+                        startDate = item.StartDate,
+                        endDate = item.EndDate,
+                        discountPercentage = item.DiscountPercentage,
+                        limit = item.Limit,
+                        couponCode = item.CouponCode,
+                        minPurchaseAmount = item.MinPurchaseAmount,
+                        createdAt = item.CreatedAt,
+                        updatedAt = item.UpdatedAt,
+                        deletedAt = item.DeletedAt,
+                    });
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("get-by-id/{id}")]
         public async Task<IActionResult> GetPromotionById(int id)
         {

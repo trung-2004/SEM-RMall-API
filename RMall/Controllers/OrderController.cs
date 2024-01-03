@@ -27,7 +27,7 @@ namespace RMall.Controllers
         {
             try
             {
-                List<Order> orders = await _context.Orders.Where(p => p.DeletedAt == null).OrderByDescending(p => p.Id).ToListAsync();
+                List<Order> orders = await _context.Orders.OrderByDescending(p => p.Id).ToListAsync();
                 List<OrderDTO> result = new List<OrderDTO>();
                 foreach (var order in orders)
                 {
@@ -110,7 +110,7 @@ namespace RMall.Controllers
                     return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
                 }
 
-                List<Order> orders = await _context.Orders.Where(p => p.DeletedAt == null && p.User.Id == user.Id).OrderByDescending(p => p.Id).ToListAsync();
+                List<Order> orders = await _context.Orders.Include(p => p.Show).ThenInclude(p => p.Movie).Where(p => p.User.Id == user.Id).OrderByDescending(p => p.Id).ToListAsync();
                 List<OrderDTO> result = new List<OrderDTO>();
                 foreach (var order in orders)
                 {
@@ -119,6 +119,8 @@ namespace RMall.Controllers
                         id = order.Id,
                         orderCode = order.OrderCode,
                         showId = order.ShowId,
+                        movieTitle = order.Show.Movie.Title,
+                        imageMovie = order.Show.Movie.MovieImage,
                         userId = order.UserId,
                         total = order.Total,
                         discountAmount = order.DiscountAmount,
@@ -346,6 +348,7 @@ namespace RMall.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> CreateOrder(CreateOrder model)
         {
