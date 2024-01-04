@@ -523,7 +523,7 @@ namespace RMall.Controllers
         {
             try
             {
-                var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderCode.Equals(orderCode));
+                var order = await _context.Orders.Include(o => o.Tickets).FirstOrDefaultAsync(o => o.OrderCode.Equals(orderCode));
                 if (order == null)
                 {
                     return NotFound();
