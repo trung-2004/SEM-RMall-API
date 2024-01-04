@@ -6,16 +6,8 @@ namespace RMall.Models.Orders
 {
     public class CreateOrder
     {
-        [Required(ErrorMessage = "Please enter order code")]
-        [MinLength(3, ErrorMessage = "Enter at least 3 characters")]
-        [MaxLength(255, ErrorMessage = "Enter up to 255 characters")]
-        public string orderCode { get; set; }
-
         [Required(ErrorMessage = "Please enter showId")]
         public int showId { get; set; }
-
-        [Required(ErrorMessage = "Please enter userId")]
-        public int userId { get; set; }
 
         [Required(ErrorMessage = "Please enter total")]
         public decimal total { get; set; }

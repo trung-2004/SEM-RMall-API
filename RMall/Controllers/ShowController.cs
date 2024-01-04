@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
 using RMall.Entities;
+using RMall.Helper.Render;
 using RMall.Models.General;
 using RMall.Models.MovieGenre;
 using RMall.Models.MovieLanguage;
@@ -101,11 +102,12 @@ namespace RMall.Controllers
                     return BadRequest(response);
                 }
 
+
                 Show show = new Show
                 {
                     MovieId = model.movieId,
                     RoomId = model.roomId,
-                    ShowCode = model.showCode,
+                    ShowCode = GenerateRandom.GenerateRandomString(8),
                     StartDate = model.startDate,
                     Language = model.language,
                     CreatedAt = DateTime.Now,

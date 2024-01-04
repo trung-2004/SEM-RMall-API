@@ -2,8 +2,6 @@
 {
     public class CreateTicketRequest
     {
-        public int orderId { get; set; }
-
         public int seatId { get; set; }
 
     }

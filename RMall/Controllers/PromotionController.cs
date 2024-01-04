@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
 using RMall.Entities;
+using RMall.Helper.Render;
 using RMall.Models.General;
 using RMall.Models.Promotions;
 using RMall.Models.UserPromotions;
@@ -197,7 +198,9 @@ namespace RMall.Controllers
         {
             try
             {
-                var couponCodeExisting = await _context.Promotions.FirstOrDefaultAsync(c => c.CouponCode.Equals(model.couponCode));
+                var couponCode = GenerateRandom.GenerateRandomString(8);
+
+                var couponCodeExisting = await _context.Promotions.FirstOrDefaultAsync(c => c.CouponCode.Equals(couponCode));
 
                 if (couponCodeExisting != null)
                 {
@@ -218,7 +221,7 @@ namespace RMall.Controllers
                     EndDate = model.endDate,
                     DiscountPercentage = model.discountPercentage,
                     Limit = model.limit,
-                    CouponCode = model.couponCode,
+                    CouponCode = couponCode,
                     MinPurchaseAmount = model.minPurchaseAmount,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,

@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QRCoder;
 using RMall.DTOs;
 using RMall.Entities;
+using RMall.Helper.Render;
 using RMall.Models.FoodOrder;
 using RMall.Models.General;
 using RMall.Models.Orders;
@@ -64,19 +66,6 @@ namespace RMall.Controllers
 
                 return BadRequest(response);
             }
-        }
-        private string GenerateRandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var random = new Random();
-            var randomString = new char[length];
-
-            for (int i = 0; i < length; i++)
-            {
-                randomString[i] = chars[random.Next(chars.Length)];
-            }
-
-            return new string(randomString);
         }
 
         public static string GetAlphabeticChar(int number)
@@ -177,6 +166,7 @@ namespace RMall.Controllers
                         status = order.Status,
                         paymentMethod = order.PaymentMethod,
                         isPaid = order.IsPaid,
+                        qrCode = order.QrCode,
                         createdAt = order.CreatedAt,
                         updatedAt = order.UpdatedAt,
                         deletedAt = order.DeletedAt,
@@ -284,6 +274,7 @@ namespace RMall.Controllers
                         status = order.Status,
                         paymentMethod = order.PaymentMethod,
                         isPaid = order.IsPaid,
+                        qrCode = order.QrCode,
                         createdAt = order.CreatedAt,
                         updatedAt = order.UpdatedAt,
                         deletedAt = order.DeletedAt,
@@ -350,10 +341,28 @@ namespace RMall.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateOrder(CreateOrder model)
         {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            if (!identity.IsAuthenticated)
+            {
+                return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+            }
             try
             {
+                var userClaims = identity.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == Convert.ToInt32(userId));
+
+                if (user == null)
+                {
+                    return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
+                }
+
                 var show = await _context.Shows.FindAsync(model.showId);
 
                 if (show == null)
@@ -368,9 +377,9 @@ namespace RMall.Controllers
                 }
 
                 Order order = new Order { 
-                    OrderCode = model.orderCode,
+                    OrderCode = GenerateRandom.GenerateRandomString(8),
                     ShowId = model.showId,
-                    UserId = model.userId,
+                    UserId = user.Id,
                     Total = model.total,
                     DiscountAmount = model.discountAmount,
                     DiscountCode = model.discountCode,
@@ -387,13 +396,26 @@ namespace RMall.Controllers
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
 
+                // Tạo mã QR code từ OrderCode của order
+                var qrCodeContent = order.OrderCode;
+                var qrCodeImage = GenerateQrCodePixelData(qrCodeContent);
+
+                // Lưu hình ảnh QR code vào thư mục
+                string qrCodeFileName = $"qrcode_{order.Id}.png";
+                SaveQrCodeImage(qrCodeImage, qrCodeFileName);
+
+                // Lưu tên hình ảnh QR code vào order
+                order.QrCode = GenerateQrCodeImageUrl(qrCodeFileName);
+
+                await _context.SaveChangesAsync();
+
                 foreach (var item in model.tickets)
                 {
                     var seat = await _context.Seats.FindAsync(item.seatId);
                     var seatPricing = await _context.SeatPricings.FirstOrDefaultAsync(sp => sp.ShowId == model.showId && sp.SeatTypeId == seat.SeatTypeId);
                     Ticket ticket = new Ticket
                     {
-                        Code = GenerateRandomString(10),
+                        Code = GenerateRandom.GenerateRandomString(10),
                         OrderId = order.Id,
                         StartDate = show.StartDate,
                         SeatId = item.seatId,
@@ -446,6 +468,77 @@ namespace RMall.Controllers
                     deletedAt = order.DeletedAt,
                 });
             } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+        private byte[] GenerateQrCodePixelData(string content)
+        {
+            byte[] QRCode = new byte[0];
+            if (!string.IsNullOrEmpty(content))
+            {
+                QRCodeGenerator qRCodeGenerator = new QRCodeGenerator();
+                QRCodeData data = qRCodeGenerator.CreateQrCode(content, QRCodeGenerator.ECCLevel.Q);
+                BitmapByteQRCode bitmap = new BitmapByteQRCode(data);
+                QRCode = bitmap.GetGraphic(20);
+            }
+            return QRCode;
+        }
+
+        private void SaveQrCodeImage(byte[] pixelData, string fileName)
+        {
+            string uploadDirectory = GetUploadDirectory();
+            string filePath = Path.Combine(uploadDirectory, fileName);
+
+            Directory.CreateDirectory(uploadDirectory);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                stream.Write(pixelData, 0, pixelData.Length);
+            }
+        }
+
+        private string GetUploadDirectory()
+        {
+            return Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "orders");
+        }
+
+        private string GenerateQrCodeImageUrl(string fileName)
+        {
+            string baseUrl = "https://localhost:7220"; // Thay thế bằng URL thực của ứng dụng của bạn
+            return $"{baseUrl}/uploads/orders/{fileName}";
+        }
+
+        [HttpPut("use-tickets")]
+        public async Task<IActionResult> GetTicketOrder(string orderCode)
+        {
+            try
+            {
+                var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderCode.Equals(orderCode));
+                if (order == null)
+                {
+                    return NotFound();
+                }
+
+                foreach (var item in order.Tickets)
+                {
+                    item.IsUsed = 1;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
             {
                 var response = new GeneralServiceResponse
                 {

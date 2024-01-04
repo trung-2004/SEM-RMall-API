@@ -30,6 +30,8 @@ namespace RMall.Models.Orders
 
         public int isPaid { get; set; }
 
+        public string qrCode { get; set; }
+
         public List<TicketResponse> tickets { get; set; }
 
         public List<OrderFoodResponse> foods { get; set; }

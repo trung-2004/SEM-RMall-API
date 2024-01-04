@@ -5,11 +5,6 @@ namespace RMall.Models.Shows
 {
     public class CreateShow
     {
-        [Required(ErrorMessage = "Please enter code")]
-        [MinLength(3, ErrorMessage = "Enter at least 3 characters")]
-        [MaxLength(255, ErrorMessage = "Enter up to 255 characters")]
-        public string showCode { get; set; }
-
         [Required(ErrorMessage = "Please enter movie")]
         public int movieId { get; set; }
 
