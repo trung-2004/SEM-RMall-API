@@ -15,9 +15,7 @@ public partial class RmallApiContext : DbContext
     {
     }
 
-    public virtual DbSet<Brand> Brands { get; set; }
-
-    public virtual DbSet<BrandIntroduction> BrandIntroductions { get; set; }
+    public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Favorite> Favorites { get; set; }
 
@@ -45,6 +43,8 @@ public partial class RmallApiContext : DbContext
 
     public virtual DbSet<OrderFood> OrderFoods { get; set; }
 
+    public virtual DbSet<Product> Products { get; set; }
+
     public virtual DbSet<Promotion> Promotions { get; set; }
 
     public virtual DbSet<Room> Rooms { get; set; }
@@ -54,8 +54,6 @@ public partial class RmallApiContext : DbContext
     public virtual DbSet<SeatPricing> SeatPricings { get; set; }
 
     public virtual DbSet<SeatType> SeatTypes { get; set; }
-
-    public virtual DbSet<Section> Sections { get; set; }
 
     public virtual DbSet<Shop> Shops { get; set; }
 
@@ -73,49 +71,11 @@ public partial class RmallApiContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Brand>(entity =>
+        modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Brands__3213E83F95E6F924");
+            entity.HasKey(e => e.Id).HasName("PK__Categori__3213E83F03097B99");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.DeletedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("deleted_at");
-            entity.Property(e => e.Image)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("image");
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("name");
-            entity.Property(e => e.ShopId).HasColumnName("shop_id");
-            entity.Property(e => e.Slug)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("slug");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("updated_at");
-
-            entity.HasOne(d => d.Shop).WithMany(p => p.Brands)
-                .HasForeignKey(d => d.ShopId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Brands__shop_id__0A688BB1");
-        });
-
-        modelBuilder.Entity<BrandIntroduction>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__BrandInt__3213E83FE250BD4B");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.BrandId).HasColumnName("brand_id");
-            entity.Property(e => e.Content)
-                .HasColumnType("text")
-                .HasColumnName("content");
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
@@ -133,11 +93,6 @@ public partial class RmallApiContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
-
-            entity.HasOne(d => d.Brand).WithMany(p => p.BrandIntroductions)
-                .HasForeignKey(d => d.BrandId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__BrandIntr__brand__12FDD1B2");
         });
 
         modelBuilder.Entity<Favorite>(entity =>
@@ -201,7 +156,9 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<Floor>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Floors__3213E83F1E06F4AA");
+            entity.HasKey(e => e.Id).HasName("PK__Floors__3213E83F7DFC552F");
+
+            entity.HasIndex(e => e.FloorNumber, "UQ__Floors__4AE77A4B49AD5512").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -210,7 +167,10 @@ public partial class RmallApiContext : DbContext
             entity.Property(e => e.DeletedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("deleted_at");
-            entity.Property(e => e.FloorNumber).HasColumnName("floor_number");
+            entity.Property(e => e.FloorNumber)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("floor_number");
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
@@ -246,7 +206,7 @@ public partial class RmallApiContext : DbContext
 
         modelBuilder.Entity<GalleryMall>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__GalleryM__3213E83F0B699AE0");
+            entity.HasKey(e => e.Id).HasName("PK__GalleryM__3213E83F92066B49");
 
             entity.ToTable("GalleryMall");
 
@@ -257,10 +217,17 @@ public partial class RmallApiContext : DbContext
             entity.Property(e => e.DeletedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("deleted_at");
+            entity.Property(e => e.Description)
+                .HasColumnType("text")
+                .HasColumnName("description");
             entity.Property(e => e.ImagePath)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("image_path");
+            entity.Property(e => e.ProductName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("product_name");
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
@@ -509,6 +476,42 @@ public partial class RmallApiContext : DbContext
                 .HasConstraintName("FK__OrderFood__order__084B3915");
         });
 
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Products__3213E83F00B97F54");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DeletedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("deleted_at");
+            entity.Property(e => e.Description)
+                .HasColumnType("text")
+                .HasColumnName("description");
+            entity.Property(e => e.Image)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("image");
+            entity.Property(e => e.Name)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("name");
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("price");
+            entity.Property(e => e.ShopId).HasColumnName("shop_id");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
+
+            entity.HasOne(d => d.Shop).WithMany(p => p.Products)
+                .HasForeignKey(d => d.ShopId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Products__shop_i__28B808A7");
+        });
+
         modelBuilder.Entity<Promotion>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Promotio__3213E83FF735FA51");
@@ -657,43 +660,36 @@ public partial class RmallApiContext : DbContext
                 .HasColumnName("updated_at");
         });
 
-        modelBuilder.Entity<Section>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Sections__3213E83FF0885D7B");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.DeletedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("deleted_at");
-            entity.Property(e => e.FloorId).HasColumnName("floor_id");
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("name");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("updated_at");
-
-            entity.HasOne(d => d.Floor).WithMany(p => p.Sections)
-                .HasForeignKey(d => d.FloorId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Sections__floor___05A3D694");
-        });
-
         modelBuilder.Entity<Shop>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Shops__3213E83F5D842DB2");
+            entity.HasKey(e => e.Id).HasName("PK__Shops__3213E83F1597AD2B");
+
+            entity.HasIndex(e => e.Name, "UQ__Shops__72E12F1B7BD547DA").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.Property(e => e.ContactInfo)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("contact_info");
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
             entity.Property(e => e.DeletedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("deleted_at");
+            entity.Property(e => e.Description)
+                .HasColumnType("text")
+                .HasColumnName("description");
+            entity.Property(e => e.FloorId).HasColumnName("floor_id");
+            entity.Property(e => e.HoursOfOperation)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("hours_of_operation");
+            entity.Property(e => e.ImagePath)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("image_path");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -705,6 +701,16 @@ public partial class RmallApiContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Shops)
+                .HasForeignKey(d => d.CategoryId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Shops__category___25DB9BFC");
+
+            entity.HasOne(d => d.Floor).WithMany(p => p.Shops)
+                .HasForeignKey(d => d.FloorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Shops__floor_id__24E777C3");
         });
 
         modelBuilder.Entity<Show>(entity =>

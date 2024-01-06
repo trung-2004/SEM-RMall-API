@@ -7,7 +7,7 @@ public partial class Floor
 {
     public int Id { get; set; }
 
-    public int FloorNumber { get; set; }
+    public string FloorNumber { get; set; } = null!;
 
     public DateTime? CreatedAt { get; set; }
 
@@ -15,5 +15,5 @@ public partial class Floor
 
     public DateTime? DeletedAt { get; set; }
 
-    public virtual ICollection<Section> Sections { get; set; } = new List<Section>();
+    public virtual ICollection<Shop> Shops { get; set; } = new List<Shop>();
 }

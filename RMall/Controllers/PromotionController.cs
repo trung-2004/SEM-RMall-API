@@ -483,9 +483,22 @@ namespace RMall.Controllers
                             Data = ""
                         });
                     }
-                    var userPromotionExisting = await _context.UserPromotions.Where(up => up.PromotionId == model.promotionId).ToListAsync();
 
-                    if (userPromotionExisting.Count > promotion.Limit)
+                    var userPromotionExisting = await _context.UserPromotions.FirstOrDefaultAsync(up => up.PromotionId == model.promotionId && up.UserId == user.Id);
+                    if(userPromotionExisting != null)
+                    {
+                        return BadRequest(new GeneralServiceResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "This promotion you already have",
+                            Data = ""
+                        });
+                    }
+
+                    var userPromotionExistings = await _context.UserPromotions.Where(up => up.PromotionId == model.promotionId).ToListAsync();
+
+                    if (userPromotionExistings.Count > promotion.Limit)
                     {
                         return BadRequest(new GeneralServiceResponse
                         {

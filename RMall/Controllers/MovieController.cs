@@ -265,7 +265,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
-        //[Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> CreateMovie([FromForm]CreateMovie model)
         {
             try
@@ -286,7 +286,7 @@ namespace RMall.Controllers
                 var imageUrl = await _imgService.UploadImageAsync(model.movie_image, "movies");
                 var coverUrl = await _imgService.UploadImageAsync(model.cover_image, "movies");
 
-                if (imageUrl != null)
+                if (imageUrl != null && coverUrl != null)
                 {
                     Movie m = new Movie
                     {
@@ -374,7 +374,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
-        //[Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> EditMovie(EditMovie model)
         {
             try
