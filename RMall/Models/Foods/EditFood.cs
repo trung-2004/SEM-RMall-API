@@ -22,5 +22,8 @@ namespace RMall.Models.Foods
         [Required(ErrorMessage = "Please enter quantity")]
         [Range(0, int.MaxValue, ErrorMessage = "Please enter a valid decimal value.")]
         public int quantity { get; set; }
+
+        [Required(ErrorMessage = "Please enter description")]
+        public string description { get; set; }
     }
 }

@@ -54,6 +54,43 @@ namespace RMall.Controllers
 
         }
 
+        [HttpGet("trash-can")]
+        public async Task<IActionResult> TrashCan()
+        {
+            try
+            {
+                List<Genre> genres = await _context.Genres.Where(m => m.DeletedAt != null).OrderByDescending(m => m.DeletedAt).ToListAsync();
+                List<GenreDTO> result = new List<GenreDTO>();
+                foreach (Genre m in genres)
+                {
+                    result.Add(new GenreDTO
+                    {
+                        id = m.Id,
+                        name = m.Name,
+                        slug = m.Slug,
+                        createdAt = m.CreatedAt,
+                        updatedAt = m.UpdatedAt,
+                        deletedAt = m.DeletedAt,
+                    });
+                }
+                return Ok(result);
+
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+
+        }
+
         [HttpGet("get-by-id/{id}")]
         public async Task<IActionResult> getGenreById(int id)
         {
@@ -103,7 +140,7 @@ namespace RMall.Controllers
         {
             try
             {
-                bool genreExists = await _context.Movies.AnyAsync(c => c.Title.Equals(model.name));
+                bool genreExists = await _context.Genres.AnyAsync(c => c.Name.Equals(model.name));
 
                 if (genreExists)
                 {

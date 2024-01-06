@@ -25,6 +25,8 @@ namespace RMall.Models.Shops
 
         public string? description { get; set; }
 
+        public string? address { get; set; }
+
         public List<ProductResponse>? products { get; set; }
 
         public DateTime? createdAt { get; set; }

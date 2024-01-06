@@ -21,5 +21,7 @@
         public string? hoursOfOperation { get; set; }
 
         public string? description { get; set; }
+
+        public string? address { get; set; }
     }
 }

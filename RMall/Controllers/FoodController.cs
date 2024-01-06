@@ -37,6 +37,7 @@ namespace RMall.Controllers
                         image = item.Image,
                         price = item.Price,
                         quantity = item.Quantity,
+                        description = item.Description,
                         createdAt = item.CreatedAt,
                         updatedAt = item.UpdatedAt,
                         deletedAt = item.DeletedAt,
@@ -72,6 +73,7 @@ namespace RMall.Controllers
                         image = food.Image,
                         price = food.Price,
                         quantity = food.Quantity,
+                        description= food.Description,
                         createdAt = food.CreatedAt,
                         updatedAt = food.UpdatedAt,
                         deletedAt = food.DeletedAt
@@ -120,6 +122,7 @@ namespace RMall.Controllers
                         image = item.Image,
                         price = item.Price,
                         quantity = item.Quantity,
+                        description = item.Description,
                         createdAt = item.CreatedAt,
                         updatedAt = item.UpdatedAt,
                         deletedAt = item.DeletedAt,
@@ -155,6 +158,7 @@ namespace RMall.Controllers
                         Image = imageUrl,
                         Price = model.price,
                         Quantity = model.quantity,
+                        Description = model.description,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,
                         DeletedAt = null
@@ -169,6 +173,7 @@ namespace RMall.Controllers
                         name = food.Name,
                         price = food.Price,
                         quantity = food.Quantity,
+                        description = food.Description,
                         createdAt = food.CreatedAt,
                         updatedAt = food.UpdatedAt,
                         deletedAt = food.DeletedAt,
@@ -222,6 +227,7 @@ namespace RMall.Controllers
                     Name = model.name,
                     Price = model.price,
                     Quantity = model.quantity,
+                    Description = model.description,
                     CreatedAt = foodExisting.CreatedAt,
                     UpdatedAt = DateTime.Now,
                     DeletedAt = null
