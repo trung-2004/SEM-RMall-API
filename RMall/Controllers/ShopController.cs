@@ -229,7 +229,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
-        [Authorize(Roles = "Super Admin")]
+        //[Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> CreateShop([FromForm]CreateShop model)
         {
             if (ModelState.IsValid)
@@ -321,7 +321,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
-        [Authorize(Roles = "Super Admin")]
+        //[Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> EditShop([FromForm] EditShop model)
         {
             if (ModelState.IsValid)
