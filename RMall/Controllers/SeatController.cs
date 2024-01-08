@@ -22,7 +22,7 @@ namespace RMall.Controllers
         {
             try
             {
-                List<Seat> seats = await _context.Seats.Where(s => s.RoomId == id).OrderByDescending(s => s.SeatTypeId).ToListAsync();
+                List<Seat> seats = await _context.Seats.Where(s => s.RoomId == id).OrderBy(s => s.RowNumber).ThenBy(s => s.SeatNumber).ToListAsync();
                 List<SeatDTO> result = new List<SeatDTO>();
                 foreach (var seat in seats)
                 {
@@ -75,7 +75,8 @@ namespace RMall.Controllers
                 }
                 List<Seat> seats = await _context.Seats
                     .Where(s => s.RoomId == show.RoomId)
-                    .OrderByDescending(s => s.SeatTypeId)
+                    .OrderBy(s => s.RowNumber)
+                    .ThenBy(s => s.SeatNumber)
                     .ToListAsync();
 
                 List<int> seatsBooked = show.Orders

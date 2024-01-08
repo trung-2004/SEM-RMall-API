@@ -10,6 +10,12 @@
 
         public string? promotionName { get; set; }
 
+        public DateTime? startDate { get; set; }
+
+        public DateTime? endDate { get; set; }
+
+        public int? discountPercentage { get; set; }
+
         public string? promotionCode { get; set; }
 
         public int isUsed { get; set; }

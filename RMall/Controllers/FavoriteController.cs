@@ -52,6 +52,7 @@ namespace RMall.Controllers
                         id = item.Id,
                         movieId = item.MovieId,
                         movieName = item.Movie.Title,
+                        movieImage = item.Movie.MovieImage,
                         userId = item.UserId,
                         createdAt = item.CreatedAt,
                         updatedAt = item.UpdatedAt,

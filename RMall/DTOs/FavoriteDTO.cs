@@ -6,6 +6,8 @@
 
         public string movieName { get; set; }
 
+        public string movieImage { get; set; }
+
         public int userId { get; set; }
     }
 }
