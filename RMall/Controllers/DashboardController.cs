@@ -72,7 +72,7 @@ namespace RMall.Controllers
         {
             var totalShows = new
             {
-                TotalShows = await _context.Shows.CountAsync(s => s.StartDate <= DateTime.Now && DateTime.Now <= s.StartDate.AddMinutes(s.Movie.Duration)),
+                TotalShows = await _context.Shows.CountAsync(),
                 UpcomingShows = await _context.Shows.CountAsync(s => s.StartDate > DateTime.Now)
             };
 

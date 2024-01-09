@@ -10,6 +10,10 @@ namespace RMall.Models.Orders
 
         public int showId { get; set; }
 
+        public DateTime startDate { get; set; }
+
+        public string roomName { get; set; }
+
         public string movieName { get; set; }
 
         public int userId { get; set; }

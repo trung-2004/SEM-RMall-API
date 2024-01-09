@@ -146,21 +146,23 @@ namespace RMall.Controllers
             }
         }
 
-        [HttpGet("get-by-id/{id}")]
-        public async Task<IActionResult> GetOrderDetail(int id)
+        [HttpGet("get-by-id/{code_order}")]
+        public async Task<IActionResult> GetOrderDetail(string code_order)
         {
             try
             {
-                Order order = await _context.Orders.Include(o => o.Tickets).ThenInclude(o => o.Seat).Include(o => o.User).Include(o => o.OrderFoods).ThenInclude(o => o.Food).FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null);
+                Order order = await _context.Orders.Include(o => o.Tickets).ThenInclude(o => o.Seat).Include(o => o.User).Include(o => o.OrderFoods).ThenInclude(o => o.Food).FirstOrDefaultAsync(x => x.OrderCode.Equals(code_order) && x.DeletedAt == null);
                 if (order != null)
                 {
-                    var show = await _context.Shows.Include(s => s.Movie).FirstOrDefaultAsync(s => s.Id == order.ShowId);
+                    var show = await _context.Shows.Include(s => s.Movie).Include(s => s.Room).FirstOrDefaultAsync(s => s.Id == order.ShowId);
 
                     var orderDetail = new OrderDetail
                     {
                         id = order.Id,
                         orderCode = order.OrderCode,
                         showId = order.ShowId,
+                        startDate = show.StartDate,
+                        roomName = show.Room.Name,
                         movieName = show.Movie.Title,
                         userId = order.UserId,
                         userName = order.User.Fullname,
@@ -236,9 +238,9 @@ namespace RMall.Controllers
             }
         }
 
-        [HttpGet("detail/{id}")]
+        [HttpGet("detail/{code_order}")]
         [Authorize]
-        public async Task<IActionResult> GetOrderDetailForUser(int id)
+        public async Task<IActionResult> GetOrderDetailForUser(string code_order)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
 
@@ -259,16 +261,18 @@ namespace RMall.Controllers
                     return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
                 }
 
-                Order order = await _context.Orders.Include(o => o.Tickets).ThenInclude(o => o.Seat).Include(o => o.User).Include(o => o.OrderFoods).ThenInclude(o => o.Food).FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null && x.UserId == user.Id);
+                Order order = await _context.Orders.Include(o => o.Tickets).ThenInclude(o => o.Seat).Include(o => o.User).Include(o => o.OrderFoods).ThenInclude(o => o.Food).FirstOrDefaultAsync(x => x.OrderCode.Equals(code_order) && x.DeletedAt == null && x.UserId == user.Id);
                 if (order != null)
                 {
-                    var show = await _context.Shows.Include(s => s.Movie).FirstOrDefaultAsync(s => s.Id == order.ShowId);
+                    var show = await _context.Shows.Include(s => s.Movie).Include(s => s.Room).FirstOrDefaultAsync(s => s.Id == order.ShowId);
 
                     var orderDetail = new OrderDetail
                     {
                         id = order.Id,
                         orderCode = order.OrderCode,
                         showId = order.ShowId,
+                        startDate = show.StartDate,
+                        roomName = show.Room.Name,
                         movieName = show.Movie.Title,
                         userId = order.UserId,
                         userName = order.User.Fullname,
