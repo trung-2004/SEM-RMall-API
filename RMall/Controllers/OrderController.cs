@@ -5,13 +5,16 @@ using Microsoft.EntityFrameworkCore;
 using QRCoder;
 using RMall.DTOs;
 using RMall.Entities;
+using RMall.Helper.Email;
 using RMall.Helper.Render;
 using RMall.Models.FoodOrder;
 using RMall.Models.General;
 using RMall.Models.Orders;
 using RMall.Models.Tickets;
+using RMall.Service.Email;
 using System.Net.Sockets;
 using System.Security.Claims;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RMall.Controllers
 {
@@ -20,9 +23,11 @@ namespace RMall.Controllers
     public class OrderController : ControllerBase
     {
         private readonly RmallApiContext _context;
-        public OrderController(RmallApiContext context)
+        private readonly IEmailService _emailService;
+        public OrderController(RmallApiContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
         [HttpGet]
         public async Task<IActionResult> GetOrderAll()
@@ -363,7 +368,7 @@ namespace RMall.Controllers
                     return Unauthorized(new GeneralServiceResponse { Success = false, StatusCode = 401, Message = "Not Authorized", Data = "" });
                 }
 
-                var show = await _context.Shows.FindAsync(model.showId);
+                var show = await _context.Shows.Include(s => s.Movie).Include(s => s.Room).FirstOrDefaultAsync(s => s.Id == model.showId);
 
                 if (show == null)
                 {
@@ -449,6 +454,64 @@ namespace RMall.Controllers
                         await _context.SaveChangesAsync();
                     }   
                 }
+
+                List<TicketResponse> tickets = new List<TicketResponse>();
+                List<OrderFoodResponse> foods = new List<OrderFoodResponse>();
+
+                foreach (var item in order.Tickets)
+                {
+                    var rowChar = GetAlphabeticChar(item.Seat.RowNumber);
+
+                    // Kết hợp RowChar và SeatNumber để tạo seatName
+                    var seatName = $"{rowChar}{item.Seat.SeatNumber}";
+                    var ticket = new TicketResponse
+                    {
+                        id = item.Id,
+                        code = item.Code,
+                        orderId = item.OrderId,
+                        startDate = item.StartDate,
+                        seatId = item.SeatId,
+                        seatName = seatName,
+                        price = item.Price,
+                        isUsed = item.IsUsed,
+                    };
+                    tickets.Add(ticket);
+                }
+                foreach (var item in order.OrderFoods)
+                {
+                    var food = new OrderFoodResponse
+                    {
+                        id = item.Id,
+                        orderId = item.OrderId,
+                        foodId = item.FoodId,
+                        foodName = item.Food.Name,
+                        foodImage = item.Food.Image,
+                        price = item.Price,
+                        quantity = item.Quantity,
+                    };
+                    foods.Add(food);
+                }
+
+                var orderDetail = new
+                {
+                    MovieName = show.Movie.Title,
+                    OrderCode = order.OrderCode,
+                    QRCode = order.QrCode,
+                    Screen = show.Room.Name,
+                    StartDate = show.StartDate,
+                    CreateAt = order.CreatedAt,
+                    Tickets = tickets,
+                    Foods = foods,
+                    Total = order.Total,
+                    FinalTotal = order.FinalTotal,
+                    PaymentMethod = order.PaymentMethod,
+                };
+
+                Mailrequest mailrequest = new Mailrequest();
+                mailrequest.ToEmail = user.Email;
+                mailrequest.Subject = "R Ticket: Successful Transaction";
+                mailrequest.Body = EmailContentOrder.GetHtmlcontentOrder(orderDetail.MovieName, order.QrCode, orderDetail.OrderCode, orderDetail.Screen, orderDetail.StartDate, orderDetail.StartDate, orderDetail.Total, orderDetail.FinalTotal, orderDetail.PaymentMethod, orderDetail.Tickets, orderDetail.Foods);
+                await _emailService.SendEmailAsync(mailrequest);
 
                 return Created($"get-by-id?id={order.Id}", new OrderDTO
                 {

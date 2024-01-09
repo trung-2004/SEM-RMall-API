@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RMall.Helper.Email;
+using RMall.Service.Email;
 using RMall.Service.Movies;
 using RMall.Service.UploadFiles;
 using System.Text;
@@ -32,7 +33,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-
+builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddScoped<IImgService, ImgService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 
