@@ -96,7 +96,7 @@ namespace RMall.Controllers
             return Ok(totalShows);
         }
 
-        [HttpGet("top-selling")]
+        [HttpGet("movie/top-selling")]
         public async Task<IActionResult> GetTopSellingMovies()
         {
             
