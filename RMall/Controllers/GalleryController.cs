@@ -58,6 +58,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("trash-can")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> TrashCan()
         {
             try
@@ -94,6 +95,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-id/{id}")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> getGalleryById(int id)
         {
             try
@@ -141,6 +143,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> CreateGallery([FromForm] CreateGalleryMall model)
         {
             try
@@ -199,6 +202,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> EditGallery([FromForm] EditGalleryMall model)
         {
             try
@@ -268,6 +272,7 @@ namespace RMall.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             try
@@ -308,6 +313,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("restore/{id}")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> Restore(int id)
         {
             try

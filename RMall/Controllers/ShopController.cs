@@ -67,6 +67,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("trash-can")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> TrashCan()
         {
             try
@@ -229,7 +230,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
-        //[Authorize(Roles = "Super Admin")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> CreateShop([FromForm]CreateShop model)
         {
             if (ModelState.IsValid)
@@ -321,7 +322,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
-        //[Authorize(Roles = "Super Admin")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> EditShop([FromForm] EditShop model)
         {
             if (ModelState.IsValid)
@@ -428,6 +429,7 @@ namespace RMall.Controllers
         }
 
         [HttpDelete("delete")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> DeleteShop(List<int> ids)
         {
             try
@@ -470,6 +472,7 @@ namespace RMall.Controllers
 
         [HttpPut]
         [Route("restore/{id}")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> Restore(int id)
         {
             try

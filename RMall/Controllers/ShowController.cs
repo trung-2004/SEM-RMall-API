@@ -23,7 +23,7 @@ namespace RMall.Controllers
             _context = context;
         }
         [HttpGet]
-        //[Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetShowAll()
         {
             try
@@ -85,6 +85,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> CreateShow(CreateShow model)
         {
             try

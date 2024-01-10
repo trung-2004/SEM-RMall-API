@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
@@ -18,6 +19,7 @@ namespace RMall.Controllers
             _context = context;
         }
         [HttpGet("get-by-roomId/{id}")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetAllSeatByRoom(int id)
         {
             try
@@ -64,6 +66,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-showCode/{ShowCode}")]
+        [Authorize]
         public async Task<IActionResult> GetAllSeatByShow(string ShowCode)
         {
             try

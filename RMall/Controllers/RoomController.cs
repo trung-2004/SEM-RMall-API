@@ -17,6 +17,7 @@ namespace RMall.Controllers
             _context = context;
         }
         [HttpGet("get-all")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetAllRoom()
         {
             try

@@ -97,6 +97,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("movie/top-selling")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetTopSellingMovies()
         {
             
@@ -117,7 +118,7 @@ namespace RMall.Controllers
             {
                 MovieId = g.Key.Id,
                 MovieTitle = g.Key.Title,
-                TicketCount = g.Count()
+                TicketCount = g.Count(),
             })
             .OrderByDescending(x => x.TicketCount)
             .Take(10)

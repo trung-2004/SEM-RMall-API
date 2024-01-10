@@ -20,6 +20,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-all")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> GetAllFeedback()
         {
             try

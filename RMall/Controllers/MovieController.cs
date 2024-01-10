@@ -33,7 +33,6 @@ namespace RMall.Controllers
         }
 
         [HttpGet]
-        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetMovieAll()
         {
             try
@@ -196,6 +195,8 @@ namespace RMall.Controllers
         }
 
         [HttpGet("trash-can")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+
         public async Task<IActionResult> TrashCan()
         {
             try
@@ -265,7 +266,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
-        //[Authorize(Roles = "Super Admin")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> CreateMovie([FromForm]CreateMovie model)
         {
             try
@@ -374,7 +375,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
-        //[Authorize(Roles = "Super Admin")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> EditMovie(EditMovie model)
         {
             try
@@ -456,6 +457,7 @@ namespace RMall.Controllers
         }
 
         [HttpDelete("delete")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> SoftDelete(List<int> ids)
         {
             try
@@ -499,6 +501,7 @@ namespace RMall.Controllers
 
         [HttpPut]
         [Route("restore/{id}")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> Restore(int id)
         {
             try
