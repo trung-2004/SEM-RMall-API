@@ -273,17 +273,20 @@ namespace RMall.Controllers
 
         [HttpDelete("delete/{id}")]
         //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
-        public async Task<IActionResult> SoftDelete(int id)
+        public async Task<IActionResult> SoftDelete(List<int> ids)
         {
             try
             {
-                GalleryMall galleryMall = await _context.GalleryMalls.FindAsync(id);
-
-                if (galleryMall != null)
+                foreach (var id in ids)
                 {
-                    galleryMall.DeletedAt = DateTime.Now;
-                }
+                    GalleryMall galleryMall = await _context.GalleryMalls.FindAsync(id);
 
+                    if (galleryMall != null)
+                    {
+                        galleryMall.DeletedAt = DateTime.Now;
+                    }
+                }
+                    
                 await _context.SaveChangesAsync();
 
                 var response = new GeneralServiceResponse

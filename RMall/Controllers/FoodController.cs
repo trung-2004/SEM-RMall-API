@@ -287,15 +287,18 @@ namespace RMall.Controllers
 
         [HttpDelete("delete/{id}")]
         //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
-        public async Task<IActionResult> SoftDelete(int id)
+        public async Task<IActionResult> SoftDelete(List<int> ids)
         {
             try
             {
-                Food food = await _context.Foods.FindAsync(id);
-
-                if (food != null)
+                foreach (var id in ids)
                 {
-                    food.DeletedAt = DateTime.Now;
+                    Food food = await _context.Foods.FindAsync(id);
+
+                    if (food != null)
+                    {
+                        food.DeletedAt = DateTime.Now;
+                    }
                 }
 
                 await _context.SaveChangesAsync();

@@ -169,6 +169,121 @@ namespace RMall.Controllers
             }
         }
 
+        [HttpGet("get-all-by-category/{slug}")]
+        public async Task<IActionResult> GetAllShopByCategory(string slug)
+        {
+            try
+            {
+                var category = await _context.Categories.FirstOrDefaultAsync(f => f.Slug.Equals(slug));
+                if (category == null)
+                {
+                    return NotFound(new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "Not Found",
+                        Data = ""
+                    });
+                }
+
+                List<Shop> shops = await _context.Shops.Include(s => s.Category).Include(s => s.Floor).Where(s => s.DeletedAt == null && s.CategoryId == category.Id).OrderByDescending(s => s.Id).ToListAsync();
+                List<ShopDTO> result = new List<ShopDTO>();
+                foreach (Shop shop in shops)
+                {
+                    result.Add(new ShopDTO
+                    {
+                        id = shop.Id,
+                        name = shop.Name,
+                        imagePath = shop.ImagePath,
+                        slug = shop.Slug,
+                        floorId = shop.FloorId,
+                        floorName = shop.Floor.FloorNumber,
+                        categoryId = shop.CategoryId,
+                        categoryName = shop.Category.Name,
+                        contactInfo = shop.ContactInfo,
+                        hoursOfOperation = shop.HoursOfOperation,
+                        description = shop.Description,
+                        address = shop.Address,
+                        createdAt = shop.CreatedAt,
+                        updatedAt = shop.UpdatedAt,
+                        deletedAt = shop.DeletedAt,
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("relateds/{slug}")]
+        public async Task<IActionResult> GetAllShopRelateds(string slug)
+        {
+            try
+            {
+                var shopExisting = await _context.Shops.FirstOrDefaultAsync(f => f.Slug.Equals(slug));
+                if (shopExisting == null)
+                {
+                    return NotFound(new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "Not Found",
+                        Data = ""
+                    });
+                }
+
+                List<Shop> shops = await _context.Shops.Include(s => s.Category).Include(s => s.Floor).Where(s => s.DeletedAt == null && s.CategoryId == shopExisting.CategoryId && s.Id != shopExisting.Id).OrderByDescending(s => s.Id).Take(4).ToListAsync();
+                List<ShopDTO> result = new List<ShopDTO>();
+                foreach (Shop shop in shops)
+                {
+                    result.Add(new ShopDTO
+                    {
+                        id = shop.Id,
+                        name = shop.Name,
+                        imagePath = shop.ImagePath,
+                        slug = shop.Slug,
+                        floorId = shop.FloorId,
+                        floorName = shop.Floor.FloorNumber,
+                        categoryId = shop.CategoryId,
+                        categoryName = shop.Category.Name,
+                        contactInfo = shop.ContactInfo,
+                        hoursOfOperation = shop.HoursOfOperation,
+                        description = shop.Description,
+                        address = shop.Address,
+                        createdAt = shop.CreatedAt,
+                        updatedAt = shop.UpdatedAt,
+                        deletedAt = shop.DeletedAt,
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+
         [HttpGet("detail/{slug}")]
         public async Task<IActionResult> DetailShop(string slug)
         {

@@ -149,6 +149,55 @@ namespace RMall.Controllers
             }
         }
 
+        [HttpGet("get-by-id/{id}")]
+        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
+        public async Task<IActionResult> getProductById(int id)
+        {
+            try
+            {
+                Product product = await _context.Products.FirstOrDefaultAsync(f => f.Id == id && f.DeletedAt == null);
+                if (product != null)
+                {
+                    return Ok(new ProductDTO
+                    {
+                        id = product.Id,
+                        name= product.Name,
+                        price = product.Price,
+                        shopId = product.ShopId,
+                        description = product.Description,
+                        createdAt = product.CreatedAt,
+                        updatedAt = product.UpdatedAt,
+                        deletedAt = product.DeletedAt
+
+                    });
+                }
+                else
+                {
+                    var response = new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "Not Found",
+                        Data = ""
+                    };
+
+                    return NotFound(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
         [HttpPost("create")]
         //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> CreateProduct([FromForm]CreateProduct model)

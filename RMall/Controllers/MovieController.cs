@@ -376,7 +376,7 @@ namespace RMall.Controllers
 
         [HttpPut("edit")]
         //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
-        public async Task<IActionResult> EditMovie(EditMovie model)
+        public async Task<IActionResult> EditMovie([FromForm]EditMovie model)
         {
             try
             {
@@ -419,6 +419,28 @@ namespace RMall.Controllers
                     else
                     {
                         movie.MovieImage = existingMovie.MovieImage;
+                    }
+
+                    if (model.cover_image != null)
+                    {
+                        string imageUrl = await _imgService.UploadImageAsync(model.cover_image, "movies");
+
+                        if (imageUrl == null)
+                        {
+                            return BadRequest(new GeneralServiceResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "Failed to upload avatar.",
+                                Data = ""
+                            });
+                        }
+
+                        movie.CoverImage = imageUrl;
+                    }
+                    else
+                    {
+                        movie.CoverImage = existingMovie.MovieImage;
                     }
 
                     _context.Movies.Update(movie);
