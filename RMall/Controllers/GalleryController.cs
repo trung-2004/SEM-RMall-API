@@ -271,7 +271,7 @@ namespace RMall.Controllers
             }
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("delete")]
         //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> SoftDelete(List<int> ids)
         {

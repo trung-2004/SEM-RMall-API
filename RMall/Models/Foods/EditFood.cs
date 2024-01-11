@@ -12,7 +12,6 @@ namespace RMall.Models.Foods
         [MaxLength(255, ErrorMessage = "Enter up to 255 characters")]
         public string name { get; set; }
 
-        [Required(ErrorMessage = "Please enter image")]
         public IFormFile? image { get; set; }
 
         [Required(ErrorMessage = "Please enter price")]

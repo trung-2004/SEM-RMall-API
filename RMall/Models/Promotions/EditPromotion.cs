@@ -31,9 +31,6 @@ namespace RMall.Models.Promotions
         [Range(0, int.MaxValue, ErrorMessage = "Please enter a valid decimal value.")]
         public int limit { get; set; }
 
-        [Required(ErrorMessage = "Please enter coupon code")]
-        public string couponCode { get; set; } = null!;
-
         [Required(ErrorMessage = "Please enter min puchase amount")]
         [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid decimal value.")]
         public decimal minPurchaseAmount { get; set; }

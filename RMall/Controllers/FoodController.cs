@@ -226,17 +226,11 @@ namespace RMall.Controllers
                     });
                 }
 
-                Food food = new Food
-                {
-                    Id = model.id,
-                    Name = model.name,
-                    Price = model.price,
-                    Quantity = model.quantity,
-                    Description = model.description,
-                    CreatedAt = foodExisting.CreatedAt,
-                    UpdatedAt = DateTime.Now,
-                    DeletedAt = null
-                };
+                foodExisting.Name = model.name;
+                foodExisting.Price = model.price;
+                foodExisting.Quantity = model.quantity;
+                foodExisting.Description = model.description;
+                foodExisting.UpdatedAt = DateTime.Now;
 
                 if (model.image != null)
                 {
@@ -253,14 +247,13 @@ namespace RMall.Controllers
                         });
                     }
 
-                    food.Image = imageUrl;
+                    foodExisting.Image = imageUrl;
                 }
                 else
                 {
-                    food.Image = foodExisting.Image;
+                    foodExisting.Image = foodExisting.Image;
                 }
 
-                _context.Foods.Update(food);
                 await _context.SaveChangesAsync();
 
                 return Ok(new GeneralServiceResponse
@@ -285,7 +278,7 @@ namespace RMall.Controllers
             }
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("delete")]
         //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> SoftDelete(List<int> ids)
         {

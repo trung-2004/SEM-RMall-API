@@ -282,36 +282,15 @@ namespace RMall.Controllers
                     });
                 }
 
-                var couponCodeExisting = await _context.Promotions.AnyAsync(c => c.CouponCode.Equals(model.couponCode) && c.Id != model.id);
+                promotionExisting.Name = model.name;
+                promotionExisting.Slug = model.name.ToLower().Replace(" ", "-");
+                promotionExisting.StartDate = model.startDate;
+                promotionExisting.EndDate = model.endDate;
+                promotionExisting.DiscountPercentage = model.discountPercentage;
+                promotionExisting.Limit = model.limit;
+                promotionExisting.MinPurchaseAmount = model.minPurchaseAmount;
+                promotionExisting.UpdatedAt = DateTime.Now;
 
-                if (couponCodeExisting)
-                {
-                    return BadRequest(new GeneralServiceResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "Coupon Code already exists",
-                        Data = ""
-                    });
-                }
-
-                Promotion promotion = new Promotion
-                {
-                    Id = model.id,
-                    Name = model.name,
-                    Slug = model.name.ToLower().Replace(" ", "-"),
-                    StartDate = model.startDate,
-                    EndDate = model.endDate,
-                    DiscountPercentage = model.discountPercentage,
-                    Limit = model.limit,
-                    CouponCode = model.couponCode,
-                    MinPurchaseAmount = model.minPurchaseAmount,
-                    CreatedAt = promotionExisting.CreatedAt,
-                    UpdatedAt = DateTime.Now,
-                    DeletedAt = null,
-                };
-
-                _context.Promotions.Update(promotion);
                 await _context.SaveChangesAsync();
 
                 return Ok(new GeneralServiceResponse
