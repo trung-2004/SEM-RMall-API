@@ -66,7 +66,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-showCode/{ShowCode}")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> GetAllSeatByShow(string ShowCode)
         {
             try

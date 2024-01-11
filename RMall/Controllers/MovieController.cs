@@ -121,7 +121,7 @@ namespace RMall.Controllers
                         title = m.Title,
                         actor = m.Actor,
                         movie_image = m.MovieImage,
-                        cover_image = m.MovieImage,
+                        cover_image = m.CoverImage,
                         describe = m.Describe,
                         director = m.Director,
                         duration = m.Duration,

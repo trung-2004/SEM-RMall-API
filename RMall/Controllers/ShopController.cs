@@ -289,7 +289,7 @@ namespace RMall.Controllers
         {
             try
             {
-                Shop shop = await _context.Shops.Include(s => s.Floor).Include(s => s.Category).Include(s => s.Products).FirstOrDefaultAsync(x => x.Slug == slug);
+                Shop shop = await _context.Shops.Include(s => s.Floor).Include(s => s.Category).Include(s => s.Products).FirstOrDefaultAsync(x => x.Slug == slug && x.DeletedAt == null);
                 if (shop == null)
                 {
                     return NotFound();

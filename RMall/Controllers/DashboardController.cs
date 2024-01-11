@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RMall.DTOs;
 using RMall.Entities;
+using RMall.Models.General;
 using System;
 
 namespace RMall.Controllers
@@ -23,7 +25,7 @@ namespace RMall.Controllers
         {
             var shopCount = new
             {
-                TotalShop = await _context.Shops.CountAsync(),
+                TotalShop = await _context.Shops.Where(m => m.DeletedAt == null).CountAsync(),
             };
 
             return Ok(shopCount);
@@ -35,7 +37,7 @@ namespace RMall.Controllers
         {
             var movieCount = new
             {
-                TotalMovie = await _context.Movies.CountAsync(),
+                TotalMovie = await _context.Movies.Where(m => m.DeletedAt == null).CountAsync(),
             };
 
             return Ok(movieCount);
@@ -72,8 +74,8 @@ namespace RMall.Controllers
         {
             var totalShows = new
             {
-                TotalShows = await _context.Shows.CountAsync(),
-                UpcomingShows = await _context.Shows.CountAsync(s => s.StartDate > DateTime.Now)
+                TotalShows = await _context.Shows.Where(m => m.DeletedAt == null).CountAsync(),
+                UpcomingShows = await _context.Shows.Where(m => m.DeletedAt == null).CountAsync(s => s.StartDate > DateTime.Now)
             };
 
             return Ok(totalShows);
@@ -96,12 +98,10 @@ namespace RMall.Controllers
             return Ok(totalShows);
         }
 
-        [HttpGet("movie/top-selling")]
+        [HttpGet("movie/top-10-selling")]
         //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetTopSellingMovies()
         {
-            
-
             try
             {
                 var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
@@ -130,6 +130,88 @@ namespace RMall.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+        [HttpGet("shop/top-10-with-traffic")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        public async Task<IActionResult> GetTopShop()
+        {
+            try
+            {
+                List<Shop> shops = await _context.Shops.Include(s => s.Category).Include(s => s.Floor).Where(s => s.DeletedAt == null).OrderByDescending(s => s.Id).Take(10).ToListAsync();
+                List<ShopDTO> result = new List<ShopDTO>();
+                foreach (Shop shop in shops)
+                {
+                    result.Add(new ShopDTO
+                    {
+                        id = shop.Id,
+                        name = shop.Name,
+                        imagePath = shop.ImagePath,
+                        slug = shop.Slug,
+                        floorId = shop.FloorId,
+                        floorName = shop.Floor.FloorNumber,
+                        categoryId = shop.CategoryId,
+                        categoryName = shop.Category.Name,
+                        contactInfo = shop.ContactInfo,
+                        hoursOfOperation = shop.HoursOfOperation,
+                        description = shop.Description,
+                        address = shop.Address,
+                        createdAt = shop.CreatedAt,
+                        updatedAt = shop.UpdatedAt,
+                        deletedAt = shop.DeletedAt,
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("total-product")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        public async Task<IActionResult> GetProductCount()
+        {
+            var productCount = new
+            {
+                TotalProduct = await _context.Products.Where(m => m.DeletedAt == null).CountAsync(),
+            };
+
+            return Ok(productCount);
+        }
+
+        [HttpGet("total-promotion")]
+        //[Authorize(Roles = "Super Admin")]
+        public async Task<IActionResult> GetPromotionCount()
+        {
+            var promoCount = new
+            {
+                TotalPromotion = await _context.Promotions.Where(u => u.DeletedAt == null).CountAsync(),
+                TotalPromotionStillValid = await _context.Promotions.Where(u => u.StartDate <= DateTime.Now && u.EndDate >= DateTime.Now).CountAsync(),
+            };
+
+            return Ok(promoCount);
+        }
+
+        [HttpGet("total-food")]
+        //[Authorize(Roles = "Super Admin")]
+        public async Task<IActionResult> GetFoodCount()
+        {
+            var foodCount = new
+            {
+                TotalPromotion = await _context.Foods.Where(u => u.DeletedAt == null).CountAsync(),
+            };
+
+            return Ok(foodCount);
         }
     }
     public class MovieSaleResult

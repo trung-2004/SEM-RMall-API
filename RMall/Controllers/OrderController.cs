@@ -36,7 +36,7 @@ namespace RMall.Controllers
         {
             try
             {
-                List<Order> orders = await _context.Orders.OrderByDescending(p => p.Id).ToListAsync();
+                List<Order> orders = await _context.Orders.Include(o => o.User).Include(o => o.Show).ThenInclude(o => o.Movie).OrderByDescending(p => p.Id).ToListAsync();
                 List<OrderDTO> result = new List<OrderDTO>();
                 foreach (var order in orders)
                 {
@@ -44,8 +44,11 @@ namespace RMall.Controllers
                     {
                         id = order.Id,
                         orderCode = order.OrderCode,
+                        movieTitle = order.Show.Movie.Title,
+                        imageMovie = order.Show.Movie.MovieImage,
                         showId = order.ShowId,
                         userId = order.UserId,
+                        userName = order.User.Fullname,
                         total = order.Total,
                         discountAmount = order.DiscountAmount,
                         discountCode = order.DiscountCode,

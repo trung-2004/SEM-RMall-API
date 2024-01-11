@@ -12,6 +12,8 @@
 
         public int userId { get; set; }
 
+        public string? userName { get; set; }
+
         public decimal total { get; set; }
 
         public decimal discountAmount { get; set; }
