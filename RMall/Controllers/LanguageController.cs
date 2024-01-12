@@ -22,7 +22,7 @@ namespace RMall.Controllers
         {
             try
             {
-                List<Language> languages = await _context.Languages.OrderByDescending(m => m.Name).ToListAsync();
+                List<Language> languages = await _context.Languages.OrderBy(m => m.Name).ToListAsync();
                 List<LanguageDTO> result = new List<LanguageDTO>();
                 foreach (var language in languages)
                 {

@@ -26,7 +26,7 @@ namespace RMall.Controllers
         {
             try
             {
-                List<Product> products = await _context.Products.Where(s => s.DeletedAt == null).OrderByDescending(s => s.Id).ToListAsync();
+                List<Product> products = await _context.Products.Include(p => p.Shop).Where(s => s.DeletedAt == null).OrderByDescending(s => s.Id).ToListAsync();
                 List<ProductDTO> result = new List<ProductDTO>();
                 foreach (Product product in products)
                 {
@@ -38,6 +38,7 @@ namespace RMall.Controllers
                         price = product.Price,
                         description = product.Description,
                         shopId = product.ShopId,
+                        shopName = product.Shop.Name,
                         createdAt = product.CreatedAt,
                         updatedAt = product.UpdatedAt,
                         deletedAt = product.DeletedAt,

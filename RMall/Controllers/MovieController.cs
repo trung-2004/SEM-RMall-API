@@ -176,6 +176,10 @@ namespace RMall.Controllers
 
                     movieDto.favoriteCount = await _context.Favorites.Where(f => f.MovieId == m.Id).CountAsync();
 
+                    var ticketCount = await _context.Tickets.Include(t => t.Order).ThenInclude(t => t.Show).ThenInclude(t => t.Movie).Where(t => t.Order.Show.Movie.Id == m.Id).CountAsync();
+
+                    movieDto.totalTicket = ticketCount;
+
                     return Ok(movieDto);
                 }
 

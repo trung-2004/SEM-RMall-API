@@ -11,5 +11,7 @@
         public string? description { get; set; }
 
         public int shopId { get; set; }
+
+        public string? shopName { get; set; }
     }
 }

@@ -22,7 +22,7 @@ namespace RMall.Controllers
         {
             try
             {
-                List<Genre> genres = await _context.Genres.Where(m => m.DeletedAt == null).OrderByDescending(m => m.Id).ToListAsync();
+                List<Genre> genres = await _context.Genres.Where(m => m.DeletedAt == null).OrderBy(m => m.Id).ToListAsync();
                 List<GenreDTO> result = new List<GenreDTO>();
                 foreach (Genre m in genres)
                 {

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
 using RMall.Entities;
 using RMall.Models.General;
+using RMall.Models.SeatPricings;
 using System;
 
 namespace RMall.Controllers
@@ -41,6 +42,153 @@ namespace RMall.Controllers
             };
 
             return Ok(movieCount);
+        }
+
+        [HttpGet("total-show-today")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        public async Task<IActionResult> GetShowToDayCount()
+        {
+            DateTime today = DateTime.Now.Date; // Lấy ngày hiện tại (bỏ qua giờ, phút, giây)
+
+            var showCount = await _context.Shows
+                .Where(s => s.DeletedAt == null && s.StartDate.Date == today)
+                .CountAsync();
+
+            var result = new
+            {
+                TotalShowToday = showCount,
+            };
+
+            return Ok(result);
+        }
+
+        [HttpGet("list-show-today")]
+        public async Task<IActionResult> GetListShowToDay()
+        {
+            try
+            {
+                DateTime today = DateTime.Now.Date;
+
+                List<Show> shows = await _context.Shows.Include(s => s.Movie).Include(s => s.Room).Include(m => m.SeatPricings).ThenInclude(m => m.SeatType).Where(m => m.DeletedAt == null && m.StartDate.Date == today).OrderByDescending(m => m.Id).ToListAsync();
+
+                List<ShowDTO> result = new List<ShowDTO>();
+                foreach (Show s in shows)
+                {
+                    var showDto = new ShowDTO
+                    {
+                        id = s.Id,
+                        movieId = s.MovieId,
+                        roomId = s.RoomId,
+                        movieName = s.Movie.Title,
+                        roomName = s.Room.Name,
+                        startDate = s.StartDate,
+                        showCode = s.ShowCode,
+                        language = s.Language,
+                        createdAt = s.CreatedAt,
+                        updatedAt = s.UpdatedAt,
+                        deletedAt = s.DeletedAt,
+                    };
+
+                    var seatPricings = new List<SeatPricingResponse>();
+
+                    foreach (var item in s.SeatPricings)
+                    {
+                        var seatPricing = new SeatPricingResponse
+                        {
+                            id = item.Id,
+                            showId = item.ShowId,
+                            seatTypeId = item.SeatTypeId,
+                            seatTypeName = item.SeatType.Name,
+                            price = item.Price,
+                        };
+                        seatPricings.Add(seatPricing);
+                        showDto.seatPricings = seatPricings;
+                    }
+
+                    result.Add(showDto);
+                }
+                return Ok(result);
+
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("total-order-today")]
+        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        public async Task<IActionResult> GetOrderToDayCount()
+        {
+            DateTime today = DateTime.Now.Date; // Lấy ngày hiện tại (bỏ qua giờ, phút, giây)
+
+            var showCount = await _context.Orders
+                .Where(s => s.DeletedAt == null && s.CreatedAt.Value.Date == today)
+                .CountAsync();
+
+            var result = new
+            {
+                TotalShowToday = showCount,
+            };
+
+            return Ok(result);
+        }
+
+        [HttpGet("list-order-today")]
+        public async Task<IActionResult> GetListOrderToDay()
+        {
+            try
+            {
+                DateTime today = DateTime.Now.Date;
+                List<Order> orders = await _context.Orders.Include(o => o.User).Include(o => o.Show).ThenInclude(o => o.Movie).Where(o => o.CreatedAt.Value.Date == today).OrderByDescending(p => p.CreatedAt).ToListAsync();
+                List<OrderDTO> result = new List<OrderDTO>();
+                foreach (var order in orders)
+                {
+                    result.Add(new OrderDTO
+                    {
+                        id = order.Id,
+                        orderCode = order.OrderCode,
+                        movieTitle = order.Show.Movie.Title,
+                        imageMovie = order.Show.Movie.MovieImage,
+                        showId = order.ShowId,
+                        userId = order.UserId,
+                        userName = order.User.Fullname,
+                        total = order.Total,
+                        discountAmount = order.DiscountAmount,
+                        discountCode = order.DiscountCode,
+                        finalTotal = order.FinalTotal,
+                        status = order.Status,
+                        paymentMethod = order.PaymentMethod,
+                        isPaid = order.IsPaid,
+                        createdAt = order.CreatedAt,
+                        updatedAt = order.UpdatedAt,
+                        deletedAt = order.DeletedAt,
+                    });
+                }
+
+                return Ok(result);
+
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
         }
 
         [HttpGet("total-cusAndSta")]
@@ -93,7 +241,7 @@ namespace RMall.Controllers
                 MonthlyRevenue = await _context.Orders
                     .Where(o => o.CreatedAt.Value.Month == DateTime.Today.Month && o.CreatedAt.Value.Year == DateTime.Today.Year)
                     .SumAsync(o => o.FinalTotal)
-             };
+            };
 
             return Ok(totalShows);
         }
@@ -113,12 +261,14 @@ namespace RMall.Controllers
                   ss => new { ShowId = ss.Show.Id, MovieId = ss.Movie.Id },
                   t => new { ShowId = t.Order.ShowId, MovieId = t.Order.Show.MovieId },
                   (ss, t) => new { ss.Movie, ss.Show, Ticket = t })
-            .GroupBy(x => new { x.Movie.Id, x.Movie.Title })
+            .GroupBy(x => new { x.Movie.Id, x.Movie.Title, x.Movie.MovieImage })
             .Select(g => new MovieSaleResult
             {
                 MovieId = g.Key.Id,
                 MovieTitle = g.Key.Title,
+                MovieImage = g.Key.MovieImage,
                 TicketCount = g.Count(),
+                Money = (int)g.Sum(t => t.Ticket.Price)
             })
             .OrderByDescending(x => x.TicketCount)
             .Take(10)
@@ -131,6 +281,7 @@ namespace RMall.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
         [HttpGet("shop/top-10-with-traffic")]
         //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetTopShop()
@@ -213,11 +364,138 @@ namespace RMall.Controllers
 
             return Ok(foodCount);
         }
+
+        [HttpGet("revenue/weekly")]
+        //[Authorize(Roles = "Super Admin")]
+        public IActionResult GetWeeklySales()
+        {
+            // Get the first day of the current week (assuming Sunday as the first day)
+            DateTime startDate = DateTime.UtcNow.Date.AddDays(-(int)DateTime.UtcNow.DayOfWeek);
+
+            // Create a list of all days in the week
+            List<DateTime> allDaysOfWeek = Enumerable.Range(0, 7)
+                .Select(offset => startDate.AddDays(offset))
+                .ToList();
+
+            // Implement logic to retrieve daily sales for the current week
+            var weeklySales = allDaysOfWeek
+                .GroupJoin(_context.Orders,
+                    date => date.Date,
+                    order => order.CreatedAt.Value.Date,
+                    (date, orders) => new
+                    {
+                        Date = date,
+                        TotalSales = orders.Sum(o => o.Total)
+                    })
+                .Select(result => new
+                {
+                    Date = result.Date,
+                    TotalSales = result.TotalSales
+                })
+                .ToList();
+
+            return Ok(weeklySales);
+        }
+
+        [HttpGet("revenue/monthly/{year}")]
+        //[Authorize(Roles = "Super Admin")]
+        public IActionResult GetMonthlySales(int year)
+        {
+            // Validate the input year
+            if (year <= 0)
+            {
+                return BadRequest("Invalid year parameter.");
+            }
+
+            // Get the first day of the selected year
+            DateTime startDate = new DateTime(year, 1, 1);
+
+            // Create a list of all months in the selected year
+            List<DateTime> allMonthsOfYear = Enumerable.Range(0, 12)
+                .Select(offset => startDate.AddMonths(offset))
+                .ToList();
+
+            // Implement logic to retrieve monthly sales for the selected year
+            var monthlySales = allMonthsOfYear
+                .GroupJoin(_context.Orders,
+                    date => new { Year = date.Year, Month = date.Month },
+                    order => new { Year = order.CreatedAt.Value.Year, Month = order.CreatedAt.Value.Month },
+                    (date, orders) => new
+                    {
+                        Year = date.Year,
+                        Month = date.Month,
+                        TotalSales = orders.Sum(o => o.Total)
+                    })
+                .OrderBy(result => result.Year)
+                .ThenBy(result => result.Month)
+                .Select(result => new
+                {
+                    Year = result.Year,
+                    Month = result.Month,
+                    TotalSales = result.TotalSales
+                })
+                .ToList();
+
+            return Ok(monthlySales);
+        }
+
+        [HttpGet("revenue/yearly")]
+        //[Authorize(Roles = "Super Admin")]
+        public IActionResult GetYearlySales()
+        {
+            int currentYear = DateTime.UtcNow.Year;
+
+            // Calculate the start year for the past 5 years
+            int startYear = currentYear - 4;
+
+            // Create a list of all years in the past 5 years
+            List<int> allYears = Enumerable.Range(startYear, 5).ToList();
+
+            // Implement logic to retrieve yearly sales for the past 5 years
+            var yearlySales = allYears
+                .GroupJoin(_context.Orders,
+                    year => year,
+                    order => order.CreatedAt.Value.Year,
+                    (year, orders) => new
+                    {
+                        Year = year,
+                        TotalSales = orders.Sum(o => o.Total)
+                    })
+                .OrderBy(result => result.Year)
+                .ToList();
+
+            return Ok(yearlySales);
+        }
+
+        [HttpGet("shows/performance-chart")]
+        public async Task<IActionResult> GetShowsPerformanceChart()
+        {
+            try
+            {
+                var performanceData = await _context.Shows
+            .OrderBy(s => s.StartDate)
+            .Select(s => new
+            {
+                Date = s.StartDate.Date,
+                TotalTicketsSold = s.Orders.SelectMany(o => o.Tickets).Count(),
+                TotalRevenue = s.Orders.SelectMany(o => o.Tickets).Sum(t => t.Price)
+            })
+            .ToListAsync();
+
+                return Ok(performanceData);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
-    public class MovieSaleResult
-    {
-        public int MovieId { get; set; }
-        public string MovieTitle { get; set; }
-        public int TicketCount { get; set; }
-    }
+        public class MovieSaleResult
+        {
+            public int MovieId { get; set; }
+            public string MovieTitle { get; set; }
+            public string MovieImage { get; set; }
+            public int TicketCount { get; set; }
+            public int Money { get; set; }
+        }
 }

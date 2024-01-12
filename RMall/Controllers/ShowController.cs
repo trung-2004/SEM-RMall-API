@@ -172,6 +172,67 @@ namespace RMall.Controllers
             }
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> DeleteShow(int id)
+        {
+            try
+            {
+                var show = await _context.Shows.FirstOrDefaultAsync(s => s.Id == id);
+                if (show == null)
+                {
+                    var response2 = new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "Not Found",
+                        Data = ""
+                    };
+
+                    return NotFound(response2);
+                }
+
+                var orderCount = await _context.Orders.Where(t => t.ShowId == show.Id).CountAsync();
+
+                if (orderCount > 0)
+                {
+                    var response1 = new GeneralServiceResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "Show cannot be deleted",
+                        Data = ""
+                    };
+
+                    return BadRequest(response1);
+                }
+
+                _context.Shows.Remove(show);
+                await _context.SaveChangesAsync();
+
+                var response = new GeneralServiceResponse
+                {
+                    Success = true,
+                    StatusCode = 200,
+                    Message = "Deleted successfully",
+                    Data = ""
+                };
+
+                return Ok(response);
+
+            } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
         private async Task<bool> IsRoomAvailableForShow(int roomId, DateTime startDate, DateTime endDate)
         {
             var isAvailable = await _context.Shows.Include(s => s.Movie)
