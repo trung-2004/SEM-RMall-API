@@ -94,19 +94,75 @@ namespace RMall.Controllers
                 {
                     var seatPricing = seatPricings.FirstOrDefault(sp => sp.SeatTypeId == seat.SeatTypeId);
                     decimal price = seatPricing != null ? seatPricing.Price : 0;
-                    return new SeatResponse
+                    var seatReservation = _context.SeatReservations.FirstOrDefault(s => s.ShowId == show.Id && s.SeatId == seat.Id);
+                    if (seatReservation == null)
                     {
-                        id = seat.Id,
-                        roomId = seat.RoomId,
-                        seatTypeId = seat.SeatTypeId,
-                        rowNumber = seat.RowNumber,
-                        seatNumber = seat.SeatNumber,
-                        createdAt = seat.CreatedAt,
-                        updatedAt = seat.UpdatedAt,
-                        deletedAt = seat.DeletedAt,
-                        isBooked = seatsBooked.Contains(seat.Id),
-                        price = price,
-                    };
+                        return new SeatResponse
+                        {
+                            id = seat.Id,
+                            roomId = seat.RoomId,
+                            seatTypeId = seat.SeatTypeId,
+                            rowNumber = seat.RowNumber,
+                            seatNumber = seat.SeatNumber,
+                            createdAt = seat.CreatedAt,
+                            updatedAt = seat.UpdatedAt,
+                            deletedAt = seat.DeletedAt,
+                            isBooked = seatsBooked.Contains(seat.Id),
+                            isReserved = false,
+                            price = price,
+                        };
+                    }
+                    else if (seatReservation.ReservationExpiresAt == null)
+                    {
+                        return new SeatResponse
+                        {
+                            id = seat.Id,
+                            roomId = seat.RoomId,
+                            seatTypeId = seat.SeatTypeId,
+                            rowNumber = seat.RowNumber,
+                            seatNumber = seat.SeatNumber,
+                            createdAt = seat.CreatedAt,
+                            updatedAt = seat.UpdatedAt,
+                            deletedAt = seat.DeletedAt,
+                            isBooked = seatsBooked.Contains(seat.Id),
+                            isReserved = false,
+                            price = price,
+                        };
+                    }
+                    else if (DateTime.Now > seatReservation.ReservationExpiresAt)
+                    {
+                        return new SeatResponse
+                        {
+                            id = seat.Id,
+                            roomId = seat.RoomId,
+                            seatTypeId = seat.SeatTypeId,
+                            rowNumber = seat.RowNumber,
+                            seatNumber = seat.SeatNumber,
+                            createdAt = seat.CreatedAt,
+                            updatedAt = seat.UpdatedAt,
+                            deletedAt = seat.DeletedAt,
+                            isBooked = seatsBooked.Contains(seat.Id),
+                            isReserved = false,
+                            price = price,
+                        };
+                    }
+                    else
+                    {
+                        return new SeatResponse
+                        {
+                            id = seat.Id,
+                            roomId = seat.RoomId,
+                            seatTypeId = seat.SeatTypeId,
+                            rowNumber = seat.RowNumber,
+                            seatNumber = seat.SeatNumber,
+                            createdAt = seat.CreatedAt,
+                            updatedAt = seat.UpdatedAt,
+                            deletedAt = seat.DeletedAt,
+                            isBooked = seatsBooked.Contains(seat.Id),
+                            isReserved = true,
+                            price = price,
+                        };
+                    }
                 }).ToList();
 
                 return Ok(result);

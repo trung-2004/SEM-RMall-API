@@ -2,11 +2,15 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using RMall.DTOs;
 using RMall.Entities;
 using RMall.Models.General;
 using RMall.Models.SeatPricings;
+using RMall.Models.Seats;
 using System;
+using System.Net.WebSockets;
+using System.Text;
 
 namespace RMall.Controllers
 {
@@ -489,13 +493,156 @@ namespace RMall.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-    }
-        public class MovieSaleResult
+
+        [HttpGet("ws")]
+        public async Task Get(string ShowCode)
         {
-            public int MovieId { get; set; }
-            public string MovieTitle { get; set; }
-            public string MovieImage { get; set; }
-            public int TicketCount { get; set; }
-            public int Money { get; set; }
+            if (HttpContext.WebSockets.IsWebSocketRequest)
+            {
+                using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                var random = new Random();
+                while(webSocket.State == WebSocketState.Open)
+                {
+                    var seats = await GetAllSeatByShow(ShowCode);
+
+                    // Chuyển đổi danh sách ghế thành chuỗi JSON
+                    var seatsJson = JsonConvert.SerializeObject(seats);
+
+                    // Gửi dữ liệu ghế đến người dùng qua WebSocket
+                    var buffer = Encoding.UTF8.GetBytes(seatsJson);
+                    await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
+
+                    _context.ChangeTracker.Clear();
+
+                    await Task.Delay(5000);
+                }
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "connection close by the server", CancellationToken.None);
+            }
+            else
+            {
+                HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            }
         }
+
+        private async Task<IActionResult> GetAllSeatByShow(string ShowCode)
+        {
+            try
+            {
+                var show = await _context.Shows.Include(s => s.Orders).ThenInclude(s => s.Tickets).FirstOrDefaultAsync(s => s.ShowCode.Equals(ShowCode) && s.DeletedAt == null);
+                
+                List<Seat> seats = await _context.Seats
+                    .Where(s => s.RoomId == show.RoomId)
+                    .OrderBy(s => s.RowNumber)
+                    .ThenBy(s => s.SeatNumber)
+                    .ToListAsync();
+
+                List<int> seatsBooked = show.Orders
+                    .SelectMany(o => o.Tickets.Select(t => t.SeatId))
+                    .ToList();
+
+                var seatPricings = await _context.SeatPricings
+                    .Where(sp => sp.ShowId == show.Id)
+                    .ToListAsync();
+
+                List<SeatResponse> result = seats.Select(seat =>
+                {
+                    var seatPricing = seatPricings.FirstOrDefault(sp => sp.SeatTypeId == seat.SeatTypeId);
+                    decimal price = seatPricing != null ? seatPricing.Price : 0;
+                    var seatReservation = _context.SeatReservations.FirstOrDefault(s => s.ShowId == show.Id && s.SeatId == seat.Id);
+                    if (seatReservation == null)
+                    {
+                        return new SeatResponse
+                        {
+                            id = seat.Id,
+                            roomId = seat.RoomId,
+                            seatTypeId = seat.SeatTypeId,
+                            rowNumber = seat.RowNumber,
+                            seatNumber = seat.SeatNumber,
+                            createdAt = seat.CreatedAt,
+                            updatedAt = seat.UpdatedAt,
+                            deletedAt = seat.DeletedAt,
+                            isBooked = seatsBooked.Contains(seat.Id),
+                            isReserved = false,
+                            price = price,
+                        };
+                    }
+                    else if (seatReservation.ReservationExpiresAt == null)
+                    {
+                        return new SeatResponse
+                        {
+                            id = seat.Id,
+                            roomId = seat.RoomId,
+                            seatTypeId = seat.SeatTypeId,
+                            rowNumber = seat.RowNumber,
+                            seatNumber = seat.SeatNumber,
+                            createdAt = seat.CreatedAt,
+                            updatedAt = seat.UpdatedAt,
+                            deletedAt = seat.DeletedAt,
+                            isBooked = seatsBooked.Contains(seat.Id),
+                            isReserved = false,
+                            price = price,
+                        };
+                    }
+                    else if (DateTime.Now > seatReservation.ReservationExpiresAt)
+                    {
+                        return new SeatResponse
+                        {
+                            id = seat.Id,
+                            roomId = seat.RoomId,
+                            seatTypeId = seat.SeatTypeId,
+                            rowNumber = seat.RowNumber,
+                            seatNumber = seat.SeatNumber,
+                            createdAt = seat.CreatedAt,
+                            updatedAt = seat.UpdatedAt,
+                            deletedAt = seat.DeletedAt,
+                            isBooked = seatsBooked.Contains(seat.Id),
+                            isReserved = false,
+                            price = price,
+                        };
+                    }
+                    else
+                    {
+                        return new SeatResponse
+                        {
+                            id = seat.Id,
+                            roomId = seat.RoomId,
+                            seatTypeId = seat.SeatTypeId,
+                            rowNumber = seat.RowNumber,
+                            seatNumber = seat.SeatNumber,
+                            createdAt = seat.CreatedAt,
+                            updatedAt = seat.UpdatedAt,
+                            deletedAt = seat.DeletedAt,
+                            isBooked = seatsBooked.Contains(seat.Id),
+                            isReserved = true,
+                            price = price,
+                        };
+                    }
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
+
+    }
+    public class MovieSaleResult
+    {
+        public int MovieId { get; set; }
+        public string MovieTitle { get; set; }
+        public string MovieImage { get; set; }
+        public int TicketCount { get; set; }
+        public int Money { get; set; }
+    }
 }

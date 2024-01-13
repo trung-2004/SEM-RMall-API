@@ -172,12 +172,12 @@ namespace RMall.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteShow(int id)
         {
             try
             {
-                var show = await _context.Shows.FirstOrDefaultAsync(s => s.Id == id);
+                var show = await _context.Shows.Include(s => s.SeatPricings).FirstOrDefaultAsync(s => s.Id == id);
                 if (show == null)
                 {
                     var response2 = new GeneralServiceResponse
@@ -205,6 +205,8 @@ namespace RMall.Controllers
 
                     return BadRequest(response1);
                 }
+
+                _context.SeatPricings.RemoveRange(show.SeatPricings);
 
                 _context.Shows.Remove(show);
                 await _context.SaveChangesAsync();

@@ -53,6 +53,8 @@ public partial class RmallApiContext : DbContext
 
     public virtual DbSet<SeatPricing> SeatPricings { get; set; }
 
+    public virtual DbSet<SeatReservation> SeatReservations { get; set; }
+
     public virtual DbSet<SeatType> SeatTypes { get; set; }
 
     public virtual DbSet<Shop> Shops { get; set; }
@@ -641,6 +643,28 @@ public partial class RmallApiContext : DbContext
                 .HasForeignKey(d => d.ShowId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__SeatPrici__show___65570293");
+        });
+
+        modelBuilder.Entity<SeatReservation>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__SeatRese__3213E83FCD6DE56E");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ReservationExpiresAt)
+                .HasColumnType("datetime")
+                .HasColumnName("reservation_expires_at");
+            entity.Property(e => e.SeatId).HasColumnName("seat_id");
+            entity.Property(e => e.ShowId).HasColumnName("show_id");
+
+            entity.HasOne(d => d.Seat).WithMany(p => p.SeatReservations)
+                .HasForeignKey(d => d.SeatId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__SeatReser__seat___0B7CAB7B");
+
+            entity.HasOne(d => d.Show).WithMany(p => p.SeatReservations)
+                .HasForeignKey(d => d.ShowId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__SeatReser__show___0C70CFB4");
         });
 
         modelBuilder.Entity<SeatType>(entity =>

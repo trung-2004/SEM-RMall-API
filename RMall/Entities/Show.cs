@@ -30,4 +30,6 @@ public partial class Show
     public virtual Room Room { get; set; } = null!;
 
     public virtual ICollection<SeatPricing> SeatPricings { get; set; } = new List<SeatPricing>();
+
+    public virtual ICollection<SeatReservation> SeatReservations { get; set; } = new List<SeatReservation>();
 }

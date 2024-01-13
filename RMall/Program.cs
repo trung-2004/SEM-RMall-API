@@ -6,6 +6,7 @@ using RMall.Helper.Email;
 using RMall.Service.Email;
 using RMall.Service.Movies;
 using RMall.Service.UploadFiles;
+using System.Net.WebSockets;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,5 +88,13 @@ app.UseAuthorization();
 app.UseStaticFiles();
 
 app.MapControllers();
+
+var webSocketOptions = new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromMinutes(2),
+};
+
+app.UseWebSockets(webSocketOptions);
+
 
 app.Run();

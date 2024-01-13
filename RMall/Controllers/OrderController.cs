@@ -12,6 +12,7 @@ using RMall.Models.General;
 using RMall.Models.Orders;
 using RMall.Models.Tickets;
 using RMall.Service.Email;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -623,6 +624,86 @@ namespace RMall.Controllers
                 };
 
                 return BadRequest(response);
+            }
+        }
+
+        [HttpPost("SeatReservation/{show_id}")]
+        public async Task<IActionResult> CheckSeat(List<int> seat_ids, int show_id)
+        {
+            try
+            {
+                // Lặp qua danh sách seat_ids để kiểm tra từng ghế
+                foreach (var seat_id in seat_ids)
+                {
+                    var seatReservation = await _context.SeatReservations.FirstOrDefaultAsync(s => s.SeatId == seat_id && s.ShowId == show_id);
+
+                    if (seatReservation == null)
+                    {
+                        // Ghế chưa được giữ hoặc giữ chỗ đã hết hạn, thực hiện giữ chỗ mới
+                        SeatReservation newSeatReservation = new SeatReservation
+                        {
+                            SeatId = seat_id,
+                            ShowId = show_id,
+                            ReservationExpiresAt = null,
+                        };
+
+                        _context.SeatReservations.Add(newSeatReservation);
+                        await _context.SaveChangesAsync();
+
+
+                    }
+                    else if (seatReservation.ReservationExpiresAt == null)
+                    {
+
+                    }
+                    else if (DateTime.Now > seatReservation.ReservationExpiresAt)
+                    {
+
+                    }
+                    else
+                    {
+                        // Ghế đã được giữ và giữ chỗ vẫn còn hiệu lực, không cần thực hiện gì cả
+                        var totalShowss = new
+                        {
+                            status = false,
+                            expiresat = "",
+                        };
+
+                        return Ok(totalShowss);
+                    }
+                }
+
+                var now = DateTime.Now.AddMinutes(5);
+
+                foreach (var seat_id in seat_ids)
+                {
+                    var seatReservation = await _context.SeatReservations.FirstOrDefaultAsync(s => s.SeatId == seat_id && s.ShowId == show_id);
+                    seatReservation.ReservationExpiresAt = now;
+
+                    await _context.SaveChangesAsync();
+                }
+
+                await _context.SaveChangesAsync();
+
+                var totalShows = new
+                {
+                    status = true,
+                    expiresat = now,
+                };
+
+                return Ok(totalShows);
+            } catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+
             }
         }
     }   

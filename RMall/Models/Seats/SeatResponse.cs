@@ -14,6 +14,8 @@
 
         public bool isBooked { get; set; }
 
+        public bool isReserved { get; set; }
+
         public decimal price { get; set; }
 
         public DateTime? createdAt { get; set; }
