@@ -514,7 +514,7 @@ namespace RMall.Controllers
 
                     _context.ChangeTracker.Clear();
 
-                    await Task.Delay(5000);
+                    await Task.Delay(2000);
                 }
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "connection close by the server", CancellationToken.None);
             }

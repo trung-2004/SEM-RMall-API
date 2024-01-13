@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MailKit.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
@@ -33,11 +35,34 @@ namespace RMall.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetMovieAll()
+        public async Task<IActionResult> GetMovieAll([FromQuery] string searchTerm = null,
+    [FromQuery] List<int> languageIds = null,
+    [FromQuery] List<int> genreIds = null)
         {
             try
             {
-                List<Movie> movies = await _context.Movies.Include(m => m.MovieGenres).ThenInclude(m => m.Genre).Include(m => m.MovieLanguages).ThenInclude(m => m.Language).Where(m => m.DeletedAt == null).OrderByDescending(m => m.Id).ToListAsync();
+                var query = _context.Movies
+                    .Include(m => m.MovieGenres).ThenInclude(m => m.Genre)
+            .Include(m => m.MovieLanguages).ThenInclude(m => m.Language)
+            .Where(m => m.DeletedAt == null);
+
+                // Apply search filter
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    query = query.Where(m => m.Title.Contains(searchTerm));
+                }
+
+                if (languageIds != null && languageIds.Any())
+                {
+                    query = query.Where(m => m.MovieLanguages.Any(ml => languageIds.Contains(ml.LanguageId)));
+                }
+
+                // Apply genre filter
+                if (genreIds != null && genreIds.Any())
+                {
+                    query = query.Where(m => m.MovieGenres.Any(mg => genreIds.Contains(mg.GenreId)));
+                }
+                List<Movie> movies = await query.OrderByDescending(m => m.Id).ToListAsync();
                 List<MovieDTO> result = new List<MovieDTO>();
                 foreach (Movie m in movies)
                 {
@@ -91,6 +116,60 @@ namespace RMall.Controllers
                     result.Add(movieDto);
                 }
                 return Ok(result);
+                /*List<Movie> movies = await _context.Movies.Include(m => m.MovieGenres).ThenInclude(m => m.Genre).Include(m => m.MovieLanguages).ThenInclude(m => m.Language).Where(m => m.DeletedAt == null).OrderByDescending(m => m.Id).ToListAsync();
+                List<MovieDTO> result = new List<MovieDTO>();
+                foreach (Movie m in movies)
+                {
+                    var movieDto = new MovieDTO
+                    {
+                        id = m.Id,
+                        title = m.Title,
+                        actor = m.Actor,
+                        movie_image = m.MovieImage,
+                        cover_image = m.CoverImage,
+                        describe = m.Describe,
+                        director = m.Director,
+                        duration = m.Duration,
+                        favoriteCount = m.FavoriteCount,
+                        trailer = m.Trailer,
+                        release_date = m.ReleaseDate,
+                        createdAt = m.CreatedAt,
+                        updatedAt = m.UpdatedAt,
+                        deletedAt = m.DeletedAt,
+                    };
+
+                    var genres = new List<GenreMovieResponse>();
+                    var languages = new List<LanguageMovieResponse>();
+
+                    foreach (var item in m.MovieGenres)
+                    {
+                        var genre = new GenreMovieResponse
+                        {
+                            id = item.Id,
+                            name = item.Genre.Name
+                        };
+                        genres.Add(genre);
+                        movieDto.genres = genres;
+                    }
+
+                    foreach (var item in m.MovieLanguages)
+                    {
+                        var language = new LanguageMovieResponse
+                        {
+                            id = item.Id,
+                            name = item.Language.Name
+                        };
+                        languages.Add(language);
+                        movieDto.languages = languages;
+                    }
+
+                    var ticketCount = await _context.Tickets.Include(t => t.Order).ThenInclude(t => t.Show).ThenInclude(t => t.Movie).Where(t => t.Order.Show.Movie.Id == m.Id).CountAsync();
+
+                    movieDto.totalTicket = ticketCount;
+
+                    result.Add(movieDto);
+                }
+                return Ok(result);*/
 
             }
             catch (Exception ex)
