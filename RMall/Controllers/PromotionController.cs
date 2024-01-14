@@ -23,7 +23,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-all")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetAllPromotion()
         {
             try
@@ -105,7 +105,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-id/{id}")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetPromotionById(int id)
         {
             try
@@ -156,7 +156,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("trash-can")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> TrashCan()
         {
             try
@@ -197,7 +197,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> CreatePromotion(CreatePromotion model)
         {
             try
@@ -265,7 +265,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> EditPromotion(EditPromotion model)
         {
             try
@@ -316,7 +316,7 @@ namespace RMall.Controllers
         }
 
         [HttpDelete("delete")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> SoftDelete(List<int> ids)
         {
             try
@@ -357,7 +357,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("restore/{id}")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> Restore(int id)
         {
             try

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
@@ -23,7 +24,7 @@ namespace RMall.Controllers
             _context = context;
         }
         [HttpGet]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetShowAll()
         {
             try
@@ -85,7 +86,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> CreateShow(CreateShow model)
         {
             try
@@ -173,6 +174,7 @@ namespace RMall.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> DeleteShow(int id)
         {
             try
@@ -247,6 +249,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-movie/{id}")]
+        [Authorize]
         public async Task<IActionResult> GetShowByMovie(int id, DateTime? from, string? language)
         {
             try
@@ -302,6 +305,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-room/{id}")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetShowByRoom(int id)
         {
             try

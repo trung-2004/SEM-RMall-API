@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
@@ -55,7 +56,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("trash-can")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> TrashCan()
         {
             try
@@ -93,7 +94,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-id/{id}")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> getGenreById(int id)
         {
             try
@@ -138,7 +139,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> CreateGenre(CreateGenre model)
         {
             try
@@ -194,7 +195,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> EditGenre(EditGenre model)
         {
             try
@@ -249,7 +250,7 @@ namespace RMall.Controllers
         }
 
         [HttpDelete("delete")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> SoftDelete(List<int> ids)
         {
             try
@@ -294,7 +295,7 @@ namespace RMall.Controllers
 
         [HttpPut]
         [Route("restore/{id}")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> Restore(int id)
         {
             try

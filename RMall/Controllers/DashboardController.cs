@@ -25,7 +25,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("total-shop")]
-        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
+        [Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> GetShopCount()
         {
             var shopCount = new
@@ -36,8 +36,72 @@ namespace RMall.Controllers
             return Ok(shopCount);
         }
 
+        [HttpGet("total-gallery")]
+        [Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
+        public async Task<IActionResult> GetGalleryCount()
+        {
+            var shopCount = new
+            {
+                TotalShop = await _context.GalleryMalls.Where(m => m.DeletedAt == null).CountAsync(),
+            };
+
+            return Ok(shopCount);
+        }
+
+        [HttpGet("total-feedback")]
+        [Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
+        public async Task<IActionResult> GetFeedbackCount()
+        {
+            var shopCount = new
+            {
+                TotalShop = await _context.Feedbacks.Where(m => m.DeletedAt == null).CountAsync(),
+            };
+
+            return Ok(shopCount);
+        }
+
+        [HttpGet("list-top10-product")]
+        public async Task<IActionResult> GetTopProduct()
+        {
+            try
+            {
+                List<Product> products = await _context.Products.Include(p => p.Shop).Where(s => s.DeletedAt == null).OrderByDescending(s => s.Id).Take(10).ToListAsync();
+                List<ProductDTO> result = new List<ProductDTO>();
+                foreach (Product product in products)
+                {
+                    result.Add(new ProductDTO
+                    {
+                        id = product.Id,
+                        name = product.Name,
+                        image = product.Image,
+                        price = product.Price,
+                        description = product.Description,
+                        shopId = product.ShopId,
+                        shopName = product.Shop.Name,
+                        createdAt = product.CreatedAt,
+                        updatedAt = product.UpdatedAt,
+                        deletedAt = product.DeletedAt,
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var response = new GeneralServiceResponse
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("total-movie")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetMovieCount()
         {
             var movieCount = new
@@ -49,7 +113,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("total-show-today")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetShowToDayCount()
         {
             DateTime today = DateTime.Now.Date; // Lấy ngày hiện tại (bỏ qua giờ, phút, giây)
@@ -129,7 +193,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("total-order-today")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetOrderToDayCount()
         {
             DateTime today = DateTime.Now.Date; // Lấy ngày hiện tại (bỏ qua giờ, phút, giây)
@@ -147,6 +211,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("list-order-today")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetListOrderToDay()
         {
             try
@@ -196,7 +261,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("total-cusAndSta")]
-        //[Authorize(Roles = "Super Admin")]
+        [Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> GetUserCount()
         {
             var userCount = new
@@ -209,7 +274,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("revenue")]
-        //[Authorize(Roles = "Super Admin")]
+        [Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> GetTotalRevenue()
         {
             var totalRevenue = new
@@ -221,20 +286,21 @@ namespace RMall.Controllers
         }
 
         [HttpGet("shows-nowAndUpcoming")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetTotalShowsNow()
         {
+            var currentDateTime = DateTime.Now;
             var totalShows = new
             {
                 TotalShows = await _context.Shows.Where(m => m.DeletedAt == null).CountAsync(),
-                UpcomingShows = await _context.Shows.Where(m => m.DeletedAt == null).CountAsync(s => s.StartDate > DateTime.Now)
+                UpcomingShows = await _context.Shows.Where(m => m.DeletedAt == null).CountAsync(s => s.StartDate > currentDateTime)
             };
 
             return Ok(totalShows);
         }
 
         [HttpGet("order-overview")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetOrderOverview()
         {
             var totalShows = new
@@ -251,7 +317,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("movie/top-10-selling")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetTopSellingMovies()
         {
             try
@@ -287,7 +353,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("shop/top-10-with-traffic")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetTopShop()
         {
             try
@@ -333,7 +399,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("total-product")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetProductCount()
         {
             var productCount = new
@@ -345,7 +411,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("total-promotion")]
-        //[Authorize(Roles = "Super Admin")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetPromotionCount()
         {
             var promoCount = new
@@ -358,7 +424,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("total-food")]
-        //[Authorize(Roles = "Super Admin")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetFoodCount()
         {
             var foodCount = new
@@ -370,19 +436,19 @@ namespace RMall.Controllers
         }
 
         [HttpGet("revenue/weekly")]
-        //[Authorize(Roles = "Super Admin")]
+        [Authorize(Roles = "Super Admin")]
         public IActionResult GetWeeklySales()
         {
-            // Get the first day of the current week (assuming Sunday as the first day)
-            DateTime startDate = DateTime.UtcNow.Date.AddDays(-(int)DateTime.UtcNow.DayOfWeek);
+            // Get today's date
+            DateTime today = DateTime.UtcNow.Date;
 
-            // Create a list of all days in the week
-            List<DateTime> allDaysOfWeek = Enumerable.Range(0, 7)
-                .Select(offset => startDate.AddDays(offset))
+            // Create a list of the last 7 days (including today)
+            List<DateTime> past7Days = Enumerable.Range(0, 7)
+                .Select(offset => today.AddDays(-offset))
                 .ToList();
 
-            // Implement logic to retrieve daily sales for the current week
-            var weeklySales = allDaysOfWeek
+            // Implement logic to retrieve daily sales for the past 7 days
+            var past7DaysSales = past7Days
                 .GroupJoin(_context.Orders,
                     date => date.Date,
                     order => order.CreatedAt.Value.Date,
@@ -398,11 +464,11 @@ namespace RMall.Controllers
                 })
                 .ToList();
 
-            return Ok(weeklySales);
+            return Ok(past7DaysSales);
         }
 
         [HttpGet("revenue/monthly/{year}")]
-        //[Authorize(Roles = "Super Admin")]
+        [Authorize(Roles = "Super Admin")]
         public IActionResult GetMonthlySales(int year)
         {
             // Validate the input year
@@ -444,7 +510,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("revenue/yearly")]
-        //[Authorize(Roles = "Super Admin")]
+        [Authorize(Roles = "Super Admin")]
         public IActionResult GetYearlySales()
         {
             int currentYear = DateTime.UtcNow.Year;
@@ -472,19 +538,40 @@ namespace RMall.Controllers
         }
 
         [HttpGet("shows/performance-chart")]
+        [Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> GetShowsPerformanceChart()
         {
             try
             {
+                // Lấy danh sách 10 ngày gần nhất
+                var recentDates = Enumerable.Range(0, 10).Select(i => DateTime.Now.Date.AddDays(-i)).ToList();
+
+                // Lấy dữ liệu hiệu suất cho từng ngày
                 var performanceData = await _context.Shows
-            .OrderBy(s => s.StartDate)
-            .Select(s => new
-            {
-                Date = s.StartDate.Date,
-                TotalTicketsSold = s.Orders.SelectMany(o => o.Tickets).Count(),
-                TotalRevenue = s.Orders.SelectMany(o => o.Tickets).Sum(t => t.Price)
-            })
-            .ToListAsync();
+                    .Where(s => recentDates.Contains(s.StartDate.Date))
+                    .OrderBy(s => s.StartDate)
+                    .Select(s => new
+                    {
+                        Date = s.StartDate.Date,
+                        TotalTicketsSold = s.Orders.SelectMany(o => o.Tickets).Count(),
+                        TotalRevenue = s.Orders.SelectMany(o => o.Tickets).Sum(t => t.Price)
+                    })
+                    .ToListAsync();
+
+                // Điền vào dữ liệu cho những ngày không có dữ liệu
+                var missingDates = recentDates.Except(performanceData.Select(pd => pd.Date));
+                foreach (var missingDate in missingDates)
+                {
+                    performanceData.Add(new
+                    {
+                        Date = missingDate,
+                        TotalTicketsSold = 0,
+                        TotalRevenue = 0m
+                    });
+                }
+
+                // Sắp xếp lại danh sách theo thứ tự giảm dần của ngày
+                performanceData = performanceData.OrderBy(pd => pd.Date).ToList();
 
                 return Ok(performanceData);
             }
@@ -495,6 +582,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("ws")]
+        [Authorize]
         public async Task Get(string ShowCode)
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)

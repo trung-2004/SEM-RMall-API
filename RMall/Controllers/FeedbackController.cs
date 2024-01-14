@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RMall.DTOs;
@@ -20,7 +21,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-all")]
-        //[Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
+        [Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> GetAllFeedback()
         {
             try

@@ -31,7 +31,7 @@ namespace RMall.Controllers
             _emailService = emailService;
         }
         [HttpGet]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
 
         public async Task<IActionResult> GetOrderAll()
         {
@@ -153,7 +153,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("get-by-id/{code_order}")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetOrderDetail(string code_order)
         {
             try
@@ -593,7 +593,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("use-tickets")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> GetTicketOrder(string orderCode)
         {
             try

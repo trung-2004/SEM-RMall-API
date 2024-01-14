@@ -35,9 +35,10 @@ namespace RMall.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetMovieAll([FromQuery] string searchTerm = null,
-    [FromQuery] List<int> languageIds = null,
-    [FromQuery] List<int> genreIds = null)
+        public async Task<IActionResult> GetMovieAll(
+            [FromQuery] string searchTerm = null,
+            [FromQuery] List<int> languageIds = null,
+            [FromQuery] List<int> genreIds = null)
         {
             try
             {
@@ -278,7 +279,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("trash-can")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
 
         public async Task<IActionResult> TrashCan()
         {
@@ -349,7 +350,7 @@ namespace RMall.Controllers
         }
 
         [HttpPost("create")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> CreateMovie([FromForm]CreateMovie model)
         {
             try
@@ -458,7 +459,7 @@ namespace RMall.Controllers
         }
 
         [HttpPut("edit")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> EditMovie([FromForm]EditMovie model)
         {
             try
@@ -562,7 +563,7 @@ namespace RMall.Controllers
         }
 
         [HttpDelete("delete")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> SoftDelete(List<int> ids)
         {
             try
@@ -606,7 +607,7 @@ namespace RMall.Controllers
 
         [HttpPut]
         [Route("restore/{id}")]
-        //[Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
         public async Task<IActionResult> Restore(int id)
         {
             try
@@ -702,11 +703,36 @@ namespace RMall.Controllers
         {
             try
             {
-                var movies = await _movieService.GetAllMoviesAsync();
+                List<Movie> movies = await _context.Movies
+                    .Include(m => m.Shows)
+                    .Where(m => m.DeletedAt == null)
+                    .OrderByDescending(m => m.Shows.Count)
+                    .Take(6)
+                    .ToListAsync();
 
-                var currentDateTime = DateTime.Now;
-                List<MovieDTO> lastShowingMovies = movies.Where(movies => movies.release_date <= currentDateTime).Take(6).ToList();
-                return Ok(lastShowingMovies);
+
+                List<MovieDTO> result = new List<MovieDTO>();
+                foreach (Movie m in movies)
+                {
+                    result.Add(new MovieDTO
+                    {
+                        id = m.Id,
+                        title = m.Title,
+                        actor = m.Actor,
+                        movie_image = m.MovieImage,
+                        describe = m.Describe,
+                        director = m.Director,
+                        duration = m.Duration,
+                        favoriteCount = m.FavoriteCount,
+                        trailer = m.Trailer,
+                        release_date = m.ReleaseDate,
+                        createdAt = m.CreatedAt,
+                        updatedAt = m.UpdatedAt,
+                        deletedAt = m.DeletedAt,
+                    });
+                }
+
+                return Ok(result);
 
             }
             catch (Exception ex)
