@@ -583,7 +583,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("ws")]
-        [Authorize]
+        //[Authorize]
         public async Task Get(string ShowCode)
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
