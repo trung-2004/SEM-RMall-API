@@ -353,7 +353,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("shop/top-10-with-traffic")]
-        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> GetTopShop()
         {
             try
@@ -399,7 +399,7 @@ namespace RMall.Controllers
         }
 
         [HttpGet("total-product")]
-        [Authorize(Roles = "Super Admin, Movie Theater Manager Staff")]
+        [Authorize(Roles = "Super Admin, Shopping Center Manager Staff")]
         public async Task<IActionResult> GetProductCount()
         {
             var productCount = new
@@ -549,13 +549,14 @@ namespace RMall.Controllers
                 // Lấy dữ liệu hiệu suất cho từng ngày
                 var performanceData = await _context.Shows
                     .Where(s => recentDates.Contains(s.StartDate.Date))
-                    .OrderBy(s => s.StartDate)
-                    .Select(s => new
+                    .GroupBy(s => s.StartDate.Date)
+                    .Select(group => new
                     {
-                        Date = s.StartDate.Date,
-                        TotalTicketsSold = s.Orders.SelectMany(o => o.Tickets).Count(),
-                        TotalRevenue = s.Orders.SelectMany(o => o.Tickets).Sum(t => t.Price)
+                        Date = group.Key,
+                        TotalTicketsSold = group.SelectMany(s => s.Orders).SelectMany(o => o.Tickets).Count(),
+                        TotalRevenue = group.SelectMany(s => s.Orders).SelectMany(o => o.Tickets).Sum(t => t.Price)
                     })
+                    .OrderBy(pd => pd.Date)
                     .ToListAsync();
 
                 // Điền vào dữ liệu cho những ngày không có dữ liệu
@@ -570,7 +571,7 @@ namespace RMall.Controllers
                     });
                 }
 
-                // Sắp xếp lại danh sách theo thứ tự giảm dần của ngày
+                // Sắp xếp lại danh sách theo thứ tự tăng dần của ngày
                 performanceData = performanceData.OrderBy(pd => pd.Date).ToList();
 
                 return Ok(performanceData);
