@@ -68,7 +68,8 @@ namespace RMall.Controllers
         {
             try
             {
-                List<Promotion> promotions = await _context.Promotions.Where(p => p.DeletedAt == null && p.StartDate <= DateTime.Now && p.EndDate >= DateTime.Now).OrderByDescending(p => p.Id).ToListAsync();
+                var now = DateTime.Now;
+                List<Promotion> promotions = await _context.Promotions.Where(p => p.DeletedAt == null && p.StartDate <= now && p.EndDate >= now).OrderByDescending(p => p.Id).ToListAsync();
                 List<PromotionDTO> result = new List<PromotionDTO>();
                 foreach (var item in promotions)
                 {

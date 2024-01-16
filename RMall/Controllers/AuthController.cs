@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RMall.DTOs;
 using RMall.Entities;
+using RMall.Helper.Email;
 using RMall.Models.General;
 using RMall.Models.Users;
+using RMall.Service.Email;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -19,10 +21,12 @@ namespace RMall.Controllers
     {
         private readonly RmallApiContext _context;
         private readonly IConfiguration _config;
-        public AuthController(RmallApiContext context, IConfiguration config) 
+        private readonly IEmailService _emailService;
+        public AuthController(RmallApiContext context, IConfiguration config, IEmailService emailService) 
         { 
             _context = context;
             _config = config;
+            _emailService = emailService;
         }
 
         private string GenerateToken(User user)
@@ -277,14 +281,14 @@ namespace RMall.Controllers
                 user.ResetTokenExpiry = DateTime.Now.AddHours(1); // Thời gian hết hiệu lực của token: 1 giờ
                 await _context.SaveChangesAsync();
 
-                var resetLink = "http://localhost:3000/reset-password/" + resetToken;
+                var resetLink = "http://localhost:3001/reset-password/" + resetToken;
 
-                /*Mailrequest mailrequest = new Mailrequest();
-                mailrequest.ToEmail = student.Email;
+                Mailrequest mailrequest = new Mailrequest();
+                mailrequest.ToEmail = user.Email;
                 mailrequest.Subject = "Password Reset";
                 mailrequest.Body = $"Click the link to reset your password: {resetLink}";
 
-                await _emailService.SendEmailAsync(mailrequest);*/
+                await _emailService.SendEmailAsync(mailrequest);
 
 
                 return Ok(new GeneralServiceResponse
